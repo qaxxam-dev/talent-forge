@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>TalentForge — TAM &amp; SAM</title>
+  <link rel="stylesheet" href="global.css">
+  <script src="https://artifacts-cdn.chatglm.site/https://cdn.tailwindcss.com" data-z-original-src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .band {
+      border-radius: 10px;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 96px;
+    }
+    .band-title {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: var(--fs-h3);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .band-desc {
+      font-size: var(--fs-small);
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+    .band-1 { background: var(--bg-tint); }
+    .band-1 .band-title { color: var(--ink); }
+    .band-1 .band-title .num { color: var(--primary); }
+    .band-1 .band-desc { color: var(--ink-soft); }
+
+    .band-2 { background: rgba(95, 196, 252, 0.30); }
+    .band-2 .band-title { color: var(--ink); }
+    .band-2 .band-title .num { color: var(--primary-dark); }
+    .band-2 .band-desc { color: var(--ink-soft); }
+
+    .band-3 { background: var(--primary); color: var(--white); }
+    .band-3 .band-title { color: var(--white); }
+    .band-3 .band-desc { color: rgba(255,255,255,0.85); }
+
+    .math-panel {
+      background: var(--bg-tint);
+      border-radius: 14px;
+      padding: 26px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+    .math-step {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      font-size: var(--fs-body);
+      line-height: 1.4;
+      color: var(--ink);
+    }
+    .math-step + .math-step { margin-top: 14px; }
+    .math-step .idx {
+      font-family: var(--font-num);
+      font-weight: 800;
+      color: var(--primary);
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      min-width: 30px;
+    }
+    .math-step.result .body { font-weight: 700; color: var(--ink); }
+    .math-step.final .body { font-weight: 700; color: var(--primary); }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.hidden{display:none}</style></head>
+<body>
+  <div class="slide">
+    <div class="eyebrow">08 &nbsp;·&nbsp; MARKET</div>
+
+    <h1 style="font-family: var(--font-heading); font-size: var(--fs-h1); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-top: 10px; max-width: 1100px;">
+      A $254B hiring market.<br>A $2B verification wedge.
+    </h1>
+
+    <div style="display: flex; gap: 36px; margin-top: 22px; align-items: stretch;">
+      <!-- Left: 3 stacked horizontal funnel bands -->
+      <div style="width: 55%; display: flex; flex-direction: column; gap: 12px;" class="">
+        <div class="band band-1" style="width: 100%;">
+          <div class="band-title">TAM — <span class="num">$254B</span></div>
+          <div class="band-desc">India IT services + global tech hiring market (NASSCOM, LinkedIn Talent report, 2024).</div>
+        </div>
+        <div class="band band-2" style="width: 75%;">
+          <div class="band-title">SAM — <span class="num">$2B</span></div>
+          <div class="band-desc">Technical verification segment — ~10M annual hires × $200 per verification.</div>
+        </div>
+        <div class="band band-3" style="width: 50%;">
+          <div class="band-title">SOM (3 yr) — $20M</div>
+          <div class="band-desc">1% of SAM capture target by Year 3.</div>
+        </div>
+      </div>
+
+      <!-- Right: math panel -->
+      <div class="math-panel" style="width: 40%;">
+        <div class="eyebrow">How we got there</div>
+        <div style="margin-top: 18px;">
+          <div class="math-step">
+            <span class="idx">01</span>
+            <span class="body">10M technical hires/yr globally <span style="color: var(--ink-muted); font-size: var(--fs-small);">(industry estimate)</span></span>
+          </div>
+          <div class="math-step">
+            <span class="idx">02</span>
+            <span class="body">× $200 average revenue per verification</span>
+          </div>
+          <div class="math-step result">
+            <span class="idx">03</span>
+            <span class="body">= $2B SAM</span>
+          </div>
+          <div class="math-step final">
+            <span class="idx">04</span>
+            <span class="body">1% capture in 3 years = $20M SOM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: var(--fs-micro); color: var(--ink-muted); margin-top: auto; padding-top: 18px; letter-spacing: 0.02em;" class="">
+      Sources: NASSCOM 2024; LinkedIn Talent Solutions 2024; team assumptions.
+    </div>
+
+    <div class="footer-bar">
+      <span class="">TALENTFORGE &nbsp;·&nbsp; BUSINESS GTM</span>
+      <span>08 / 12</span>
+    </div>
+
+    <aside data-notes="" class="hidden">
+      The total addressable market for technical hiring is roughly $254 billion — that's India's IT services industry plus the global tech hiring market. Of that, the slice that's actually addressable by a verification layer is about $2 billion. Here's the math: 10 million technical hires a year globally, at an average revenue per verification of around $200, gives you a $2 billion SAM. Our serviceable obtainable market in three years is 1% of that — $20 million. That's a credible Year-3 target for a focused verification layer, and it leaves enormous headroom beyond. The wedge is small. The market behind it is not.
+    </aside>
+  </div>
+
+
+</body></html>

@@ -1,0 +1,177 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>TalentForge — Competition Analysis</title>
+  <link rel="stylesheet" href="global.css">
+  <script src="https://artifacts-cdn.chatglm.site/https://cdn.tailwindcss.com"
+    data-z-original-src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .comp-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-family: var(--font-body);
+      table-layout: fixed;
+    }
+
+    .comp-table th,
+    .comp-table td {
+      padding: 11px 18px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .comp-table thead th {
+      background: var(--bg-tint);
+      color: var(--ink);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: var(--fs-micro);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .comp-table thead th:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+
+    .comp-table thead th:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+
+    .comp-table tbody td {
+      font-size: 14px;
+      color: var(--ink);
+      border-top: 1px solid var(--rule);
+      line-height: 1.35;
+    }
+
+    .comp-table tbody tr.row-alt td {
+      background: var(--bg-tint);
+    }
+
+    .comp-table .player-cell {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 16px;
+      letter-spacing: -0.005em;
+    }
+
+    .comp-table .solves-cell {
+      color: var(--ink-soft);
+      font-weight: 500;
+    }
+
+    .comp-table .gap-cell {
+      color: var(--ink-soft);
+    }
+
+    .comp-table tr.us-row td {
+      background: var(--primary) !important;
+      color: var(--white);
+      font-weight: 600;
+      font-size: 16px;
+      border-top: none;
+      padding-top: 16px;
+      padding-bottom: 16px;
+    }
+
+    .comp-table tr.us-row .player-cell {
+      color: var(--white);
+      font-weight: 800;
+    }
+
+    .comp-table tr.us-row .solves-cell {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .comp-table tr.us-row .gap-cell {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .comp-table tr.us-row td:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+
+    .comp-table tr.us-row td:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="slide">
+    <div class="eyebrow">06 &nbsp;·&nbsp; COMPETITION</div>
+
+    <h1
+      style="font-family: var(--font-heading); font-size: var(--fs-h1); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: var(--ink); margin-top: 12px; max-width: 1100px;">
+      Existing tools solve for volume OR signal. Not both.
+    </h1>
+
+    <div style="margin-top: 22px;">
+      <table class="comp-table">
+        <colgroup>
+          <col style="width: 32%;">
+          <col style="width: 22%;">
+          <col style="width: 46%;">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Solves for</th>
+            <th>The gap</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="player-cell">HackerRank-style auto tests</td>
+            <td class="solves-cell">Volume</td>
+            <td class="gap-cell">Gameable by AI; not tied to candidate's own work</td>
+          </tr>
+          <tr class="row-alt">
+            <td class="player-cell">Mercer Mettl / iMocha (proctored)</td>
+            <td class="solves-cell">Volume + integrity</td>
+            <td class="gap-cell">Still generic DSA - not a defense of real work</td>
+          </tr>
+          <tr>
+            <td class="player-cell">Generic video interviews (HireVue)</td>
+            <td class="solves-cell">Soft signal</td>
+            <td class="gap-cell">Not tied to the candidate's actual code</td>
+          </tr>
+          <tr class="row-alt">
+            <td class="player-cell">Manual live technical interview</td>
+            <td class="solves-cell">Strong signal</td>
+            <td class="gap-cell">Doesn't scale past ~20 candidates</td>
+          </tr>
+          <tr class="us-row">
+            <td class="player-cell">TalentForge</td>
+            <td class="solves-cell">Volume + defense of OWN code at scale</td>
+            <td class="gap-cell">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-bar">
+      <span style="font-style: italic; color: var(--ink-soft);">Honest gap: we don't replace your ATS or your testing
+        platform. We add the verification step that's missing between them.</span>
+      <span>06 / 12</span>
+    </div>
+
+    <aside data-notes="" class="hidden">
+      Today, recruiters pick from four kinds of tools — and each one trades off something. HackerRank-style auto tests
+      solve for volume, but they're gameable by AI and not tied to the candidate's own work. Mercer Mettl and iMocha add
+      proctoring and integrity, but the underlying questions are still generic DSA — not a defense of real work. Generic
+      video interviews like HireVue give you a soft signal, but they're not tied to the candidate's actual code. The
+      manual live technical interview is the gold standard — it's the only one that actually verifies depth. But it
+      doesn't scale past about 20 candidates. TalentForge is the only one that solves for both — volume AND a defense of
+      the candidate's own work. We're not replacing any of these. We're the missing step between them.
+    </aside>
+  </div>
+
+
+</body>
+
+</html>

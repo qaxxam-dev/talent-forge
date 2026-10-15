@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>Slide 09 — GTM Strategy — Channels &amp; Attach</title>
+  <link rel="stylesheet" href="global.css">
+  <script src="https://artifacts-cdn.chatglm.site/https://cdn.tailwindcss.com" data-z-original-src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .channel-card {
+      border: 1px solid var(--rule);
+      border-top: 4px solid var(--primary);
+      background: #ffffff;
+      padding: 18px 20px 18px 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .channel-num {
+      font-family: var(--font-num);
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+    .channel-name {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 12px;
+    }
+    .channel-desc {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+    .attach-stripe {
+      background: var(--bg-tint);
+      border: 1px solid var(--rule);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .stage-box {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 11px 22px;
+      border: 1px solid var(--rule);
+      background: #ffffff;
+      color: var(--ink-soft);
+    }
+    .stage-box.is-talentforge {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      padding: 11px 28px;
+      font-size: 13px;
+      letter-spacing: 0.22em;
+    }
+    .arrow {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      line-height: 1;
+    }
+    .why-line {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink-soft);
+      line-height: 1.4;
+      margin-top: 10px;
+      font-style: italic;
+      text-align: center;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.grid{display:grid}.hidden{display:none}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.gap-5{gap:1.25rem}</style></head>
+<body>
+  <div class="slide">
+    <!-- Eyebrow -->
+    <div class="eyebrow">09 &nbsp;·&nbsp; GO-TO-MARKET</div>
+
+    <!-- Headline -->
+    <h1 style="font-family: var(--font-heading); font-size: var(--fs-h1); font-weight: 800; line-height: 1.05; color: var(--ink); margin-top: 14px; max-width: 1020px; letter-spacing: -0.015em; box-sizing: border-box; width: 1096px; height: 206px; transform: translate(0px, -9px);" class="">
+      Attach to existing hiring workflows.<br>Not against them.
+    </h1>
+
+    <!-- Sub-headline -->
+    <p style="font-family: var(--font-body); font-size: var(--fs-h3); color: var(--ink-soft); margin-top: 12px; font-weight: 400; line-height: 1.3;" class="">
+      Three named channels. One attach point. Zero competition for candidates.
+    </p>
+
+    <!-- Channel cards -->
+    <div class="grid grid-cols-3 gap-5" style="margin-top: 24px;">
+      <div class="channel-card">
+        <div class="channel-num">01</div>
+        <div class="channel-name">Staffing Firms</div>
+        <div class="channel-desc">Co-sell as an embedded verification step inside candidate pipelines at CIEL, ProSculpt, and similar.</div>
+      </div>
+      <div class="channel-card">
+        <div class="channel-num">02</div>
+        <div class="channel-name">Campus Placement Cells</div>
+        <div class="channel-desc">Pilot inside one live drive as the post-CV-screen filter. The placement cell already owns distribution.</div>
+      </div>
+      <div class="channel-card">
+        <div class="channel-num">03</div>
+        <div class="channel-name">ATS / HR-Tech Platforms</div>
+        <div class="channel-desc">White-label API integration for the post-screen step in existing applicant tracking systems.</div>
+      </div>
+    </div>
+
+    <!-- Attach stripe -->
+    <div class="attach-stripe" style="margin-top: 20px;">
+      <div class="stage-box">CV SCREEN</div>
+      <div class="arrow">→</div>
+      <div class="stage-box is-talentforge">[ TALENTFORGE ]</div>
+      <div class="arrow">→</div>
+      <div class="stage-box">ENGINEER INTERVIEW</div>
+    </div>
+
+    <!-- Why line — folded into footer-bar to avoid overlap -->
+
+    <!-- Footer-bar -->
+    <div class="footer-bar">
+      <span style="font-style: italic;" class="">We don't compete for candidates or employers. We improve signal inside the workflow they already own.</span>
+      <span>09 / 12</span>
+    </div>
+  </div>
+
+  <aside data-notes="" class="hidden">
+    Our go-to-market is built on one principle: attach, don't compete. We don't try to become a job board. We don't try to steal candidates from staffing firms. We plug in. First, staffing firms like CIEL and ProSculpt — we co-sell as an embedded step inside their existing candidate pipeline. Second, campus placement cells — we pilot inside one live drive as the post-screen filter. They already own the candidate distribution; we add signal. Third, ATS and HR-tech platforms — white-label API integration at the post-screen step. The attach point is exactly here — after the CV screen, before the engineer interview. We are the missing step. We don't compete for candidates or employers. We improve signal inside the workflow recruiters already own.
+  </aside>
+
+
+</body></html>

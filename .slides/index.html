@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TalentForge — Pitch Deck Presentation</title>
+  <link rel="stylesheet" href="global.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Reset & Viewport */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #080a0f;
+      background-image: radial-gradient(ellipse at 50% 40%, #151c28 0%, #080a0f 75%);
+      font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Presentation Stage */
+    #presentation-viewport {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: auto;
+    }
+
+    /* Strict Fixed 1280x720 Canvas */
+    #slide-canvas {
+      width: 1280px;
+      height: 720px;
+      min-width: 1280px;
+      min-height: 720px;
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.85), 
+                  0 0 0 1px rgba(255, 255, 255, 0.08),
+                  0 0 40px rgba(0, 98, 195, 0.12);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Progress bar on top of slide */
+    #slide-progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #0062c3, #5fc4fc);
+      transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+    }
+
+    /* Slide frame with 200ms subtle cross-fade */
+    .slide-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1280px;
+      height: 720px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      background: var(--bg);
+    }
+
+    .slide-frame.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      z-index: 10;
+    }
+
+    .slide-frame .slide {
+      width: 1280px !important;
+      height: 720px !important;
+    }
+
+    /* Floating Bottom HUD Dock */
+    #presenter-hud {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(13, 20, 36, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 10px 16px;
+      gap: 10px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      z-index: 9999;
+      transition: opacity 300ms ease, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #presenter-hud.idle-hidden {
+      opacity: 0;
+      transform: translate(-50%, 15px);
+      pointer-events: none;
+    }
+
+    :fullscreen #presenter-hud,
+    :-webkit-full-screen #presenter-hud,
+    :-moz-full-screen #presenter-hud,
+    :-ms-fullscreen #presenter-hud,
+    body.is-fullscreen #presenter-hud {
+      display: none !important;
+    }
+
+    .hud-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .hud-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+    }
+
+    .hud-badge .brand-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #0062c3;
+      box-shadow: 0 0 8px #5fc4fc;
+    }
+
+    .hud-badge .topic-pill {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      max-width: 240px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-buttons-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 150ms ease;
+    }
+
+    .hud-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .hud-btn:active {
+      transform: scale(0.96);
+    }
+
+    .hud-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .slide-counter-chip {
+      font-family: var(--font-num), monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      padding: 0 8px;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .slide-counter-chip .total {
+      color: #64748b;
+      font-weight: 500;
+      font-size: 11px;
+    }
+
+    .hud-tools-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .shortcut-hints {
+      display: flex;
+      gap: 4px;
+    }
+
+    .shortcut-hints kbd {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      font-size: 10px;
+      font-family: monospace;
+      padding: 2px 6px;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+
+    .thumbnails-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      max-width: 890px;
+      padding: 4px 2px;
+      scrollbar-width: none;
+    }
+
+    .thumbnails-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .thumb-card {
+      flex-shrink: 0;
+      width: 58px;
+      height: 34px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      transition: all 180ms ease;
+    }
+
+    .thumb-card:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .thumb-card.active {
+      background: rgba(0, 98, 195, 0.45);
+      border-color: #5fc4fc;
+      box-shadow: 0 0 12px rgba(95, 196, 252, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .thumb-card .thumb-num {
+      font-size: 10px;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: var(--font-num), monospace;
+      line-height: 1;
+    }
+
+    .thumb-card .thumb-title {
+      font-size: 7.5px;
+      font-weight: 500;
+      color: #94a3b8;
+      max-width: 52px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .thumb-card.active .thumb-title {
+      color: #e2e8f0;
+    }
+
+    /* Original Crisp Slide Styles */
+    .step-card {
+      background: var(--bg-tint);
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .step-num {
+      font-family: var(--font-num);
+      font-size: var(--fs-h3);
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .step-title {
+      font-family: var(--font-heading);
+      font-size: var(--fs-body);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.25;
+      margin-top: 14px;
+    }
+    .step-desc {
+      font-family: var(--font-body);
+      font-size: var(--fs-small);
+      color: var(--ink-soft);
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+    .bottom-line {
+      font-family: var(--font-heading);
+      font-size: var(--fs-body);
+      font-weight: 600;
+      color: var(--primary);
+      line-height: 1.4;
+    }
+
+    .usp-tile {
+      background: var(--bg-tint);
+      padding: 24px 24px 26px;
+      border-radius: 14px;
+      border-top: 3px solid var(--primary);
+      display: flex;
+      flex-direction: column;
+    }
+    .usp-num {
+      font-family: var(--font-num);
+      font-weight: 800;
+      color: var(--primary);
+      font-size: var(--fs-h3);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .usp-title {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      color: var(--ink);
+      font-size: var(--fs-body);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      margin-top: 14px;
+    }
+    .usp-desc {
+      font-size: var(--fs-small);
+      color: var(--ink-soft);
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    .band {
+      border-radius: 10px;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 96px;
+    }
+    .band-title {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: var(--fs-h3);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .band-desc {
+      font-size: var(--fs-small);
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+    .band-1 { background: var(--bg-tint); }
+    .band-1 .band-title { color: var(--ink); }
+    .band-1 .band-title .num { color: var(--primary); }
+    .band-1 .band-desc { color: var(--ink-soft); }
+
+    .band-2 { background: rgba(95, 196, 252, 0.30); }
+    .band-2 .band-title { color: var(--ink); }
+    .band-2 .band-title .num { color: var(--primary-dark); }
+    .band-2 .band-desc { color: var(--ink-soft); }
+
+    .band-3 { background: var(--primary); color: var(--white); }
+    .band-3 .band-title { color: var(--white); }
+    .band-3 .band-desc { color: rgba(255,255,255,0.85); }
+
+    .math-panel {
+      background: var(--bg-tint);
+      border-radius: 14px;
+      padding: 26px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+    .math-step {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      font-size: var(--fs-body);
+      line-height: 1.4;
+      color: var(--ink);
+    }
+    .math-step + .math-step { margin-top: 14px; }
+    .math-step .idx {
+      font-family: var(--font-num);
+      font-weight: 800;
+      color: var(--primary);
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      min-width: 30px;
+    }
+    .math-step.result .body { font-weight: 700; color: var(--ink); }
+    .math-step.final .body { font-weight: 700; color: var(--primary); }
+
+    .channel-card {
+      border: 1px solid var(--rule);
+      border-top: 4px solid var(--primary);
+      background: #ffffff;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .channel-num {
+      font-family: var(--font-num);
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+    .channel-name {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 12px;
+    }
+    .channel-desc {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+    .attach-stripe {
+      background: var(--bg-tint);
+      border: 1px solid var(--rule);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .stage-box {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 11px 22px;
+      border: 1px solid var(--rule);
+      background: #ffffff;
+      color: var(--ink-soft);
+    }
+    .stage-box.is-talentforge {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      padding: 11px 28px;
+      font-size: 13px;
+      letter-spacing: 0.22em;
+    }
+    .arrow {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      line-height: 1;
+    }
+
+    .phase-col {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--rule);
+      background: #ffffff;
+    }
+    .phase-top {
+      padding: 20px 22px 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .phase-top.tint  { background: var(--bg-tint); }
+    .phase-top.accent { background: var(--accent); }
+    .phase-top.primary { background: var(--primary); }
+    .phase-num {
+      font-family: var(--font-num);
+      font-size: 56px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .phase-num.on-tint    { color: var(--primary); }
+    .phase-num.on-accent  { color: var(--primary-dark); }
+    .phase-num.on-primary  { color: #ffffff; }
+    .phase-name {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .phase-name.on-tint    { color: var(--ink); }
+    .phase-name.on-accent  { color: var(--primary-dark); }
+    .phase-name.on-primary { color: #ffffff; }
+    .phase-months {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .phase-months.on-tint    { color: var(--ink-soft); }
+    .phase-months.on-accent  { color: var(--primary-dark); }
+    .phase-months.on-primary { color: rgba(255,255,255,0.85); }
+
+    .phase-body {
+      padding: 18px 22px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+    .phase-action {
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--ink);
+      line-height: 1.55;
+      flex: 1;
+    }
+    .phase-metric {
+      background: var(--bg-tint);
+      border-left: 3px solid var(--primary);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .metric-label {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+    .metric-value {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.45;
+      font-weight: 500;
+    }
+
+    .price-card {
+      border: 1px solid var(--rule);
+      background: #ffffff;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      position: relative;
+    }
+    .price-card.featured {
+      border: 2px solid var(--primary);
+      padding: 21px 23px;
+    }
+    .price-badge {
+      position: absolute;
+      top: -12px;
+      left: 24px;
+      background: var(--primary);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      line-height: 1;
+    }
+    .tier-name {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .price-num {
+      font-family: var(--font-num);
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.05;
+      letter-spacing: -0.015em;
+      margin-top: 4px;
+    }
+    .price-unit {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink-soft);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .price-desc {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--ink);
+      line-height: 1.55;
+      margin-top: 6px;
+      flex: 1;
+    }
+    .info-tile {
+      border: 1px solid var(--rule);
+      background: var(--bg-tint);
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .info-title {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+    .info-body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+
+    /* Slide 13 - Thank You Closing Slide Styles */
+    .closing-stage {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      top: 64px;
+      bottom: 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .closing-hero {
+      font-family: var(--font-heading);
+      font-size: var(--fs-display);
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1;
+      letter-spacing: -0.025em;
+    }
+    .closing-sub {
+      font-family: var(--font-heading);
+      font-size: var(--fs-h2);
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.15;
+      margin-top: 22px;
+      letter-spacing: -0.01em;
+    }
+    .tagline-bar {
+      display: inline-block;
+      background: var(--primary);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-size: var(--fs-h3);
+      font-weight: 600;
+      padding: 14px 28px;
+      margin-top: 32px;
+      max-width: 720px;
+      line-height: 1.25;
+      letter-spacing: -0.005em;
+    }
+    .contact-block {
+      position: absolute;
+      left: 80px;
+      bottom: 56px;
+      font-family: var(--font-body);
+      font-size: var(--fs-small);
+      color: var(--ink-soft);
+      line-height: 1.55;
+    }
+    .contact-block .lead {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .question-prompt {
+      position: absolute;
+      right: 80px;
+      bottom: 56px;
+      font-family: var(--font-heading);
+      font-size: var(--fs-h3);
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .question-prompt::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      margin-right: 12px;
+      vertical-align: middle;
+      margin-bottom: 4px;
+    }
+    .closing-eyebrow {
+      position: absolute;
+      top: 64px;
+      left: 80px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Presentation Stage -->
+  <div id="presentation-viewport">
+    <!-- Strict Fixed 1280x720 Canvas -->
+    <div id="slide-canvas">
+      <div id="slide-progress-bar" style="width: 8.33%;"></div>
+
+      <!-- ========================================================
+           SLIDE 01: 01 Team & Big Idea (Original Cover Layout)
+           ======================================================== -->
+      <section class="slide-frame active" id="slide-1" data-slide="1">
+        <div class="slide">
+
+          <div class="eyebrow" style="position:absolute; top:64px; left:80px;">
+            01 &nbsp;·&nbsp; TEAM &amp; BIG IDEA
+          </div>
+
+          <div style="position:absolute; left:80px; top:220px; max-width:1120px;">
+            <h1 style="font-family:var(--font-heading); font-size:var(--fs-display); font-weight:800; color:var(--ink); line-height:0.96; letter-spacing:-0.04em;">
+              TalentForge.
+            </h1>
+            <p style="font-family:var(--font-body); font-size:var(--fs-h3); color:var(--ink-soft); margin-top:28px; max-width:860px; line-height:1.35; font-weight:400;">
+              Async Code-Defend Funnel for High-Volume Campus Drives.
+            </p>
+          </div>
+
+          <div style="position:absolute; left:80px; top:545px; background:var(--primary); color:var(--white); font-family:var(--font-heading); font-size:var(--fs-h3); font-weight:700; padding:18px 32px; border-radius:6px; letter-spacing:-0.01em; line-height:1.2;">
+            Turn 500 CVs into 20 verified candidates.
+          </div>
+
+          <div style="position:absolute; right:80px; bottom:48px; font-family:var(--font-body); font-size:var(--fs-small); color:var(--ink-muted); text-align:right; letter-spacing:0.02em; line-height:1.5;">
+            <strong style="color:var(--ink); font-weight:700;">Team AlqaTech</strong><br>
+            Izzadhin Al Qassam A S &nbsp;·&nbsp; Hanadi Al Jaradath A S
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 02: 02 Problem Statement (Exact Screenshot 02 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-2" data-slide="2">
+        <div class="slide">
+
+          <div class="eyebrow">02 &nbsp;·&nbsp; PROBLEM STATEMENT</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; color:var(--ink); margin-top:18px; max-width:1080px; letter-spacing:-0.02em;">
+            The strongest signal in technical hiring doesn't scale.
+          </h1>
+
+          <div style="margin-top:36px; display:grid; grid-template-columns: 55% 40%; column-gap:5%; flex:1; align-items:center;">
+
+            <div>
+              <div class="bullet">Hundreds of applications arrive for every campus drive — recruiters drown in volume.</div>
+              <div class="bullet">Resumes and GitHub portfolios are easily inflated with generative AI.</div>
+              <div class="bullet">Automated coding tests are gamed; generic video interviews aren't tied to the candidate's actual work.</div>
+              <div class="bullet">Live defense of one's own code — the strongest technical signal — breaks at volume.</div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+              <div class="stat-num">500+</div>
+              <div class="stat-label" style="max-width:360px;">
+                applications per campus drive. Recruiter screens them in under 48 hours.
+              </div>
+            </div>
+
+          </div>
+
+          <div style="font-size:var(--fs-micro); color:var(--ink-muted); letter-spacing:0.02em; margin-bottom:14px;">
+            Concrete case: 140+ senior engineer hours wasted per campus drive interviewing AI-padded portfolios.
+          </div>
+
+          <div class="footer-bar">
+            <span>TALENTFORGE &nbsp;·&nbsp; TEAM ALQATECH</span>
+            <span>02 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 03: 03 Target Users & Validation (Exact Screenshot 05 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-3" data-slide="3">
+        <div class="slide">
+
+          <div class="eyebrow">03 &nbsp;·&nbsp; TARGET USERS &amp; VALIDATION</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; letter-spacing:-0.02em; color:var(--ink); margin-top:12px; max-width:1080px;">
+            India hires engineers at scale.<br>Signal quality is falling.
+          </h1>
+
+          <div class="grid grid-cols-3 gap-6" style="margin-top:28px;">
+            <div class="rounded-xl slide-tint" style="padding:24px 24px 22px;">
+              <div class="stat-num" style="font-size:var(--fs-h1);">68%</div>
+              <div class="stat-label">Validated: Claimed full-stack repos in our 65-student test — only 22% defended them.</div>
+            </div>
+            <div class="rounded-xl slide-tint" style="padding:24px 24px 22px;">
+              <div class="stat-num" style="font-size:var(--fs-h1);">&lt;45s</div>
+              <div class="stat-label">Validated: Time campus screeners spend per CV — GitHub links go unchecked.</div>
+            </div>
+            <div class="rounded-xl slide-tint" style="padding:24px 24px 22px;">
+              <div class="stat-num" style="font-size:var(--fs-h1);">₹2.2K</div>
+              <div class="stat-label">Assumption: Engineer interview cost saved per ₹650 async verification.</div>
+            </div>
+          </div>
+
+          <div style="font-family:var(--font-heading); font-size:var(--fs-h3); font-weight:600; color:var(--ink-soft); margin-top:32px; letter-spacing:-0.005em;">
+            Three primary buyers &amp; their pain points —
+          </div>
+
+          <div style="margin-top:14px;">
+            <div class="bullet">Staffing firms (ProSculpt, CIEL) lose client trust when shortlisted freshers fail Round 1.</div>
+            <div class="bullet">Engineering managers burn senior developer hours interviewing AI-generated portfolios.</div>
+            <div class="bullet">Campus placement cells need verified skill proof beyond arbitrary CGPA cutoffs.</div>
+          </div>
+
+          <div class="footer-bar">
+            <span>VALIDATED VIA CAMPUS PLACEMENT INTERVIEWS &amp; 65-CANDIDATE COHORT TRIAL</span>
+            <span>03 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 04: 04 Proposed Solution (Exact Screenshot 07 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-4" data-slide="4">
+        <div class="slide">
+
+          <div class="eyebrow">04 &nbsp;·&nbsp; PROPOSED SOLUTION</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-display); font-weight:800; line-height:1.02; letter-spacing:-0.035em; color:var(--primary); margin-top:14px; max-width:1100px;">
+            We're a layer.<br>Not a destination.
+          </h1>
+
+          <div class="grid grid-cols-3 gap-5" style="margin-top:40px;">
+            <div class="usp-tile">
+              <div class="usp-num">01</div>
+              <div class="usp-title">Blind Intake &amp; Filter</div>
+              <div class="usp-desc">Strip PII from 500 CVs, run skill-gap analysis, and parse the candidate's public GitHub repo.</div>
+            </div>
+            <div class="usp-tile">
+              <div class="usp-num">02</div>
+              <div class="usp-title">Defense of Own Code</div>
+              <div class="usp-desc">Candidates answer 3 async questions generated directly from their own claimed work.</div>
+            </div>
+            <div class="usp-tile">
+              <div class="usp-num">03</div>
+              <div class="usp-title">Auditable Dossier</div>
+              <div class="usp-desc">Verification score, skill-gap matrix, and authorship hash returned straight into your ATS.</div>
+            </div>
+          </div>
+
+          <div style="font-family:var(--font-body); font-size:var(--fs-body); font-weight:700; color:var(--ink); margin-top:30px; line-height:1.45; max-width:1100px;">
+            Defensible because questions are tied to the candidate's own code — generic DSA prep doesn't work.
+          </div>
+
+          <div class="footer-bar">
+            <span>TALENTFORGE &nbsp;·&nbsp; TEAM ALQATECH</span>
+            <span>04 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 05: 05 Prototype / Demo (Exact Screenshot 03 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-5" data-slide="5">
+        <div class="slide">
+
+          <div class="eyebrow">05 &nbsp;·&nbsp; PROTOTYPE / DEMO</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; color:var(--ink); margin-top:18px; max-width:1100px; letter-spacing:-0.02em;">
+            Live working prototype.<br>Built for real repositories.
+          </h1>
+
+          <p style="font-family:var(--font-body); font-size:var(--fs-h3); color:var(--ink-soft); margin-top:16px; font-weight:400; line-height:1.3; max-width:1100px;">
+            What runs live in our demo today versus our upcoming integration roadmap.
+          </p>
+
+          <div class="grid grid-cols-4 gap-5" style="margin-top:36px;">
+
+            <div class="step-card">
+              <div class="step-num">01</div>
+              <div class="step-title">Built · Intake</div>
+              <div class="step-desc">Batch PDF resume parser, regex PII scrubber, and role skill-gap shortlister.</div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">02</div>
+              <div class="step-title">Built · Viva Engine</div>
+              <div class="step-desc">GitHub repo AST analyzer that generates 3 targeted code-defense questions.</div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">03</div>
+              <div class="step-title">Partial · Async Viva</div>
+              <div class="step-desc">Browser voice defense studio and rubric grading against original code blocks.</div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">04</div>
+              <div class="step-title">Planned · Webhooks</div>
+              <div class="step-desc">One-click native ATS connectors for Zoho Recruit, Greenhouse, and Darwinbox.</div>
+            </div>
+
+          </div>
+
+          <div style="margin-top:auto; padding-top:32px; padding-bottom:24px;" class="bottom-line">
+            Live today: Upload a CV and GitHub link to generate a sealed candidate verification dossier.
+          </div>
+
+          <div class="footer-bar">
+            <span>TALENTFORGE &nbsp;·&nbsp; TEAM ALQATECH</span>
+            <span>05 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 06: 06 Technical Architecture (Original Slide 09 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-6" data-slide="6">
+        <div class="slide">
+
+          <div class="eyebrow">06 &nbsp;·&nbsp; TECHNICAL ARCHITECTURE</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; color:var(--ink); margin-top:14px; max-width:1080px; letter-spacing:-0.015em;">
+            Stateless async pipeline.<br>Under 12 seconds per repo.
+          </h1>
+
+          <p style="font-family:var(--font-body); font-size:var(--fs-h3); color:var(--ink-soft); margin-top:12px; font-weight:400; line-height:1.3;">
+            Three modular layers. Deterministic data flow. Zero raw PII retention.
+          </p>
+
+          <div class="grid grid-cols-3 gap-5" style="margin-top:24px;">
+            <div class="channel-card">
+              <div class="channel-num">01</div>
+              <div class="channel-name">React Viva Studio</div>
+              <div class="channel-desc">TypeScript + Tailwind frontend for recruiter batch intake and WebRTC candidate voice defense.</div>
+            </div>
+            <div class="channel-card">
+              <div class="channel-num">02</div>
+              <div class="channel-name">FastAPI Core Engine</div>
+              <div class="channel-desc">Async Python workers running PyMuPDF PII scrubbing and GitHub AST code extraction.</div>
+            </div>
+            <div class="channel-card">
+              <div class="channel-num">03</div>
+              <div class="channel-name">LLM &amp; Seal Layer</div>
+              <div class="channel-desc">Gemini structured outputs, Whisper transcription, and PostgreSQL with SHA-256 dossier sealing.</div>
+            </div>
+          </div>
+
+          <div class="attach-stripe" style="margin-top:20px;">
+            <div class="stage-box">CV + GITHUB</div>
+            <div class="arrow">→</div>
+            <div class="stage-box">PII SCRUB &amp; AST</div>
+            <div class="arrow">→</div>
+            <div class="stage-box is-talentforge">[ VIVA AI ENGINE ]</div>
+            <div class="arrow">→</div>
+            <div class="stage-box">SEALED DOSSIER</div>
+          </div>
+
+          <div class="footer-bar">
+            <span style="font-style:italic;">Engineered for campus drive spikes with stateless worker queues.</span>
+            <span>06 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 07: 07 Build Evidence & Engineering (Exact Screenshot 05 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-7" data-slide="7">
+        <div class="slide">
+
+          <div class="eyebrow">07 &nbsp;·&nbsp; BUILD EVIDENCE &amp; ENGINEERING</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; letter-spacing:-0.02em; color:var(--ink); margin-top:12px; max-width:1080px;">
+            Built from scratch<br>during the hackathon.
+          </h1>
+
+          <div class="grid grid-cols-3 gap-6" style="margin-top:28px;">
+            <div class="rounded-xl slide-tint" style="padding:24px 24px 22px;">
+              <div class="stat-num" style="font-size:var(--fs-h1);">40+</div>
+              <div class="stat-label">Atomic GitHub commits across our FastAPI backend and React Viva studio.</div>
+            </div>
+            <div class="rounded-xl slide-tint" style="padding:24px 24px 22px;">
+              <div class="stat-num" style="font-size:var(--fs-h1);">3.8K+</div>
+              <div class="stat-label">Lines of original routing, AST prompt compilation, and rubric scoring logic.</div>
+            </div>
+            <div class="rounded-xl slide-tint" style="padding:24px 24px 22px;">
+              <div class="stat-num" style="font-size:var(--fs-h1);">25</div>
+              <div class="stat-label">Real student GitHub repositories benchmarked end-to-end during the sprint.</div>
+            </div>
+          </div>
+
+          <div style="font-family:var(--font-heading); font-size:var(--fs-h3); font-weight:600; color:var(--ink-soft); margin-top:32px; letter-spacing:-0.005em;">
+            Original engineering vs. open-source stack —
+          </div>
+
+          <div style="margin-top:14px;">
+            <div class="bullet">Original IP: Heuristic AST filter strips 90% framework boilerplate before LLM prompting.</div>
+            <div class="bullet">Original IP: Deterministic PII tokenizer and SHA-256 authorship seal generator.</div>
+            <div class="bullet">Reused Libraries: FastAPI, Pydantic, SQLAlchemy, PyMuPDF, React, and Tailwind CSS.</div>
+          </div>
+
+          <div class="footer-bar">
+            <span>GITHUB COMMIT LOGS &amp; LIVE REPOSITORY AVAILABLE FOR JURY INSPECTION</span>
+            <span>07 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 08: 08 Security, Privacy & Scale (Exact Screenshot 03 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-8" data-slide="8">
+        <div class="slide">
+
+          <div class="eyebrow">08 &nbsp;·&nbsp; SECURITY, PRIVACY &amp; SCALE</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; color:var(--ink); margin-top:18px; max-width:1100px; letter-spacing:-0.02em;">
+            DPDP-compliant privacy.<br>Async by design for scale.
+          </h1>
+
+          <p style="font-family:var(--font-body); font-size:var(--fs-h3); color:var(--ink-soft); margin-top:16px; font-weight:400; line-height:1.3; max-width:1100px;">
+            Built to protect candidate data and handle 10,000+ concurrent campus applications.
+          </p>
+
+          <div class="grid grid-cols-4 gap-5" style="margin-top:36px;">
+
+            <div class="step-card">
+              <div class="step-num">01</div>
+              <div class="step-title">Prompt Isolation</div>
+              <div class="step-desc">Untrusted resume and repo strings are sandboxed to block prompt injection attacks.</div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">02</div>
+              <div class="step-title">DPDP Zero-PII</div>
+              <div class="step-desc">Personal identifiers are stripped prior to LLM calls with 30-day auto-purge.</div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">03</div>
+              <div class="step-title">Inclusive Access</div>
+              <div class="step-desc">Low-bandwidth audio mode (400 KB/min) and accent-agnostic semantic grading.</div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-num">04</div>
+              <div class="step-title">Scale Trade-Off</div>
+              <div class="step-desc">Chose async recorded vivas over live sockets — cutting compute cost by 82%.</div>
+            </div>
+
+          </div>
+
+          <div style="margin-top:auto; padding-top:32px; padding-bottom:24px;" class="bottom-line">
+            Next technical step: Self-hosted quantized code models (Gemma 3) for air-gapped enterprise VPCs.
+          </div>
+
+          <div class="footer-bar">
+            <span>TALENTFORGE &nbsp;·&nbsp; TEAM ALQATECH</span>
+            <span>08 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 09: 09 Market Opportunity & Competitors (Exact Screenshot 08 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-9" data-slide="9">
+        <div class="slide">
+
+          <div class="eyebrow">09 &nbsp;·&nbsp; MARKET OPPORTUNITY &amp; COMPETITORS</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; letter-spacing:-0.02em; color:var(--ink); margin-top:10px; max-width:1100px;">
+            A $254B hiring market.<br>A $2B verification wedge.
+          </h1>
+
+          <div style="display:flex; gap:36px; margin-top:22px; align-items:stretch;">
+            <!-- Left: 3 stacked horizontal funnel bands -->
+            <div style="width:55%; display:flex; flex-direction:column; gap:12px;">
+              <div class="band band-1" style="width:100%;">
+                <div class="band-title">TAM — <span class="num">$254B</span></div>
+                <div class="band-desc">India IT services + global tech hiring market (NASSCOM, LinkedIn Talent report, 2024).</div>
+              </div>
+              <div class="band band-2" style="width:78%;">
+                <div class="band-title">SAM — <span class="num">$2B</span></div>
+                <div class="band-desc">Technical verification segment — ~10M annual hires × $200 per verification.</div>
+              </div>
+              <div class="band-3 band" style="width:58%;">
+                <div class="band-title">SOM (3-yr) — $20M</div>
+                <div class="band-desc">1% SAM capture via Indian campus &amp; staffing drives.</div>
+              </div>
+            </div>
+
+            <!-- Right: Clean Competitor Gap Panel -->
+            <div class="math-panel" style="width:40%;">
+              <div class="eyebrow">Why Existing Tools Miss This Wedge</div>
+              <div style="margin-top:18px;">
+                <div class="math-step">
+                  <span class="idx">01</span>
+                  <span class="body"><strong>HackerRank / Mettl</strong> — Solves volume, gamed by AI.</span>
+                </div>
+                <div class="math-step">
+                  <span class="idx">02</span>
+                  <span class="body"><strong>HireVue Video</strong> — Soft signal, not tied to code.</span>
+                </div>
+                <div class="math-step result">
+                  <span class="idx">03</span>
+                  <span class="body"><strong>Live Interviews</strong> — Strong signal, breaks past 20 CVs.</span>
+                </div>
+                <div class="math-step final">
+                  <span class="idx">04</span>
+                  <span class="body">TalentForge = Volume + defense of OWN code.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:var(--fs-micro); color:var(--ink-muted); margin-top:auto; padding-top:18px; letter-spacing:0.02em;">
+            Sources: NASSCOM Strategic Review 2024; LinkedIn Talent Solutions 2024; team assumptions.
+          </div>
+
+          <div class="footer-bar">
+            <span>TALENTFORGE &nbsp;·&nbsp; BUSINESS EMPHASIS</span>
+            <span>09 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 10: 10 Business Model & GTM (Exact Screenshot 11 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-10" data-slide="10">
+        <div class="slide">
+
+          <div class="eyebrow">10 &nbsp;·&nbsp; BUSINESS MODEL &amp; GTM</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; color:var(--ink); margin-top:14px; max-width:1060px; letter-spacing:-0.015em;">
+            Pay per verification.<br>Attach to existing workflows.
+          </h1>
+
+          <div class="grid grid-cols-3 gap-5" style="margin-top:28px;">
+            <div class="price-card">
+              <div class="tier-name">Per Verification</div>
+              <div class="price-num">₹500–₹800</div>
+              <div class="price-unit">per candidate</div>
+              <p class="price-desc">Transactional. Best for one-off drives or mid-market pilot usage.</p>
+            </div>
+
+            <div class="price-card featured">
+              <div class="price-badge">Most Popular</div>
+              <div class="tier-name" style="color:var(--primary);">Per Drive Seat</div>
+              <div class="price-num">₹2L–₹5L</div>
+              <div class="price-unit">per campus drive</div>
+              <p class="price-desc">Unlimited verifications within a single campus drive for staffing &amp; IT firms.</p>
+            </div>
+
+            <div class="price-card">
+              <div class="tier-name">White-Label / API</div>
+              <div class="price-num">Custom</div>
+              <div class="price-unit">per ATS platform</div>
+              <p class="price-desc">Embedded API access for staffing agencies and HR-tech platforms.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-5" style="margin-top:20px;">
+            <div class="info-tile">
+              <div class="info-title">GTM Channels &amp; Partnerships</div>
+              <p class="info-body">Co-sell with staffing firms (ProSculpt, CIEL), pilot via campus placement cells, and white-label into ATS platforms.</p>
+            </div>
+            <div class="info-tile">
+              <div class="info-title">Sales Funnel &amp; Retention Loop</div>
+              <p class="info-body">Free 1-drive shadow pilot → Paid drive seat. Verification dossiers flow back into the ATS, driving repeat next-drive usage.</p>
+            </div>
+          </div>
+
+          <div class="footer-bar">
+            <span>TALENTFORGE &nbsp;·&nbsp; BUSINESS EMPHASIS</span>
+            <span>10 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 11: 11 Financial Model & Team Cost (Exact Screenshot 11 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-11" data-slide="11">
+        <div class="slide">
+
+          <div class="eyebrow">11 &nbsp;·&nbsp; FINANCIAL MODEL &amp; TEAM COST</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; color:var(--ink); margin-top:14px; max-width:1060px; letter-spacing:-0.015em;">
+            93% gross margin.<br>Break-even in Month 7.
+          </h1>
+
+          <div class="grid grid-cols-3 gap-5" style="margin-top:28px;">
+            <div class="price-card">
+              <div class="tier-name">Unit Economics</div>
+              <div class="price-num">₹608</div>
+              <div class="price-unit">net contribution / candidate</div>
+              <p class="price-desc">₹650 blended price minus ₹42 direct COGS (LLM tokens, Whisper audio, cloud storage).</p>
+            </div>
+
+            <div class="price-card featured">
+              <div class="price-badge">14x LTV : CAC</div>
+              <div class="tier-name" style="color:var(--primary);">CAC &amp; Payback</div>
+              <div class="price-num">₹15K–₹25K</div>
+              <div class="price-unit">direct B2B acquisition cost</div>
+              <p class="price-desc">Founder-led sales to staffing firms. Full CAC payback in under 2 campus drives.</p>
+            </div>
+
+            <div class="price-card">
+              <div class="tier-name">6-Month Dev Budget</div>
+              <div class="price-num">₹12L</div>
+              <div class="price-unit">₹2.0L monthly lean burn</div>
+              <p class="price-desc">2 Co-Founders (AI &amp; Product), 2 ML/Full-Stack interns, cloud APIs, and pilot ops.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-5" style="margin-top:20px;">
+            <div class="info-tile">
+              <div class="info-title">Year-1 Revenue Projection</div>
+              <p class="info-body">36 paid campus drives + 2 staffing co-sell partners (~10,000 verified candidates) = ₹65L Year-1 ARR run-rate.</p>
+            </div>
+            <div class="info-tile">
+              <div class="info-title">Break-Even Threshold</div>
+              <p class="info-body">330 verified candidates/month (just 1.5 mid-size campus drives/month) covers our entire ₹2.0L monthly burn.</p>
+            </div>
+          </div>
+
+          <div class="footer-bar">
+            <span>TALENTFORGE &nbsp;·&nbsp; BUSINESS EMPHASIS</span>
+            <span>11 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 12: 12 Roadmap, Ask & Closing (Exact Screenshot 10 Layout)
+           ======================================================== -->
+      <section class="slide-frame" id="slide-12" data-slide="12">
+        <div class="slide">
+
+          <div class="eyebrow">12 &nbsp;·&nbsp; ROADMAP, ASK &amp; CLOSING</div>
+
+          <h1 style="font-family:var(--font-heading); font-size:var(--fs-h1); font-weight:800; line-height:1.05; color:var(--ink); margin-top:14px; max-width:1080px; letter-spacing:-0.015em;">
+            Pilot. Co-sell. Scale.<br>Our 90-day execution plan.
+          </h1>
+
+          <div class="grid grid-cols-3 gap-5" style="margin-top:26px;">
+            <!-- Day 30 -->
+            <div class="phase-col">
+              <div class="phase-top tint">
+                <div class="phase-num on-tint">30</div>
+                <div class="phase-name on-tint">Shadow Pilot</div>
+                <div class="phase-months on-tint">Days 1–30</div>
+              </div>
+              <div class="phase-body">
+                <p class="phase-action">Run TalentForge inside 2 live Chennai campus drives (500+ CVs).</p>
+                <div class="phase-metric">
+                  <span class="metric-label">Milestone</span>
+                  <span class="metric-value">≥30% reduction in engineer interview hours.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Day 60 -->
+            <div class="phase-col">
+              <div class="phase-top accent">
+                <div class="phase-num on-accent">60</div>
+                <div class="phase-name on-accent">Co-Sell &amp; Risk</div>
+                <div class="phase-months on-accent">Days 31–60</div>
+              </div>
+              <div class="phase-body">
+                <p class="phase-action">Partner with ProSculpt / CIEL; ship timed commit-diff probes to block live AI coaching.</p>
+                <div class="phase-metric">
+                  <span class="metric-label">Milestone</span>
+                  <span class="metric-value">10+ paid drives processed; ATS webhooks live.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Day 90 & Ask -->
+            <div class="phase-col">
+              <div class="phase-top primary">
+                <div class="phase-num on-primary">90</div>
+                <div class="phase-name on-primary">The Ask</div>
+                <div class="phase-months on-primary">Days 61–90</div>
+              </div>
+              <div class="phase-body">
+                <p class="phase-action">1 live pilot campus drive with ProSculpt + ₹12L seed grant for 6-month runway.</p>
+                <div class="phase-metric">
+                  <span class="metric-label">Next Step</span>
+                  <span class="metric-value">Turn 500 CVs into 20 verified builders in 24h.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-bar">
+            <span>TEAM ALQATECH &nbsp;·&nbsp; IZZADHIN AL QASSAM A S &amp; HANADI AL JARADATH A S &nbsp;·&nbsp; QASSAM@ALQATECH.IN</span>
+            <span>12 / 13</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SLIDE 13: 13 Thank You
+           ======================================================== -->
+      <section class="slide-frame" id="slide-13" data-slide="13">
+        <div class="slide">
+          <!-- Eyebrow top-left -->
+          <div class="eyebrow closing-eyebrow">13 &nbsp;·&nbsp; THANK YOU</div>
+
+          <!-- Vertically centered content -->
+          <div class="closing-stage">
+            <h1 class="closing-hero">Thank you.</h1>
+            <p class="closing-sub">TalentForge - Turning 500 CVs into 20 verified candidates.</p>
+            <div>
+              <span class="tagline-bar">Defend your code, before the interview.</span>
+            </div>
+          </div>
+
+          <!-- Bottom-left contact block -->
+          <div class="contact-block">
+            <div class="lead">Team AlqaTech&nbsp; ·&nbsp;Skill Gap &amp; Youth Employability</div>
+            <div>Email: qassam@alqatech.in&nbsp; ·&nbsp; Phone: +91 70107 46690</div>
+          </div>
+
+          <!-- Bottom-right question prompt -->
+          <div class="question-prompt">Open for questions.</div>
+        </div>
+
+        <aside data-notes="" class="hidden">
+          Thank you. That's the pitch in twelve slides. TalentForge turns five hundred CVs into twenty candidates who have already defended their own code — and returns an auditable dossier straight to your ATS. We're a layer, not a destination. We don't compete for candidates or employers; we improve signal inside the workflow recruiters already own. From here, we're looking for one pilot drive to start Phase 1, one staffing partner like CIEL or ProSculpt to co-sell with, and one ATS platform conversation for the integration play. Eighteen months from a single pilot to a signed platform partnership. I'd love to take your questions.
+        </aside>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Floating Bottom Presenter HUD & Thumbnail Strip -->
+  <nav id="presenter-hud" aria-label="Slide Deck Controls">
+    <div class="hud-controls-row">
+      
+      <div class="hud-badge">
+        <span class="brand-dot"></span>
+        <span>TalentForge</span>
+        <span class="topic-pill" id="current-eyebrow">01 TEAM &amp; BIG IDEA</span>
+      </div>
+
+      <div class="nav-buttons-group">
+        <button class="hud-btn" id="prev-btn" title="Previous Slide (← or Up)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Prev
+        </button>
+
+        <div class="slide-counter-chip">
+          <span id="current-slide-num">01</span><span class="total"> / 13</span>
+        </div>
+
+        <button class="hud-btn" id="next-btn" title="Next Slide (→, Down, or Space)">
+          Next
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+
+      <div class="hud-tools-group">
+        <div class="shortcut-hints">
+          <kbd>←</kbd><kbd>→</kbd> <kbd>Space</kbd>
+        </div>
+
+        <button class="hud-btn" id="fullscreen-btn" title="Toggle Fullscreen (F)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+          Fullscreen
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Bottom Thumbnail Strip -->
+    <div class="thumbnails-strip" id="thumbnail-strip">
+      <div class="thumb-card active" data-slide-target="1" title="01 Team &amp; Big Idea">
+        <span class="thumb-num">01</span>
+        <span class="thumb-title">Team &amp; Idea</span>
+      </div>
+      <div class="thumb-card" data-slide-target="2" title="02 Problem Statement">
+        <span class="thumb-num">02</span>
+        <span class="thumb-title">Problem</span>
+      </div>
+      <div class="thumb-card" data-slide-target="3" title="03 Target Users &amp; Validation">
+        <span class="thumb-num">03</span>
+        <span class="thumb-title">Validation</span>
+      </div>
+      <div class="thumb-card" data-slide-target="4" title="04 Proposed Solution">
+        <span class="thumb-num">04</span>
+        <span class="thumb-title">Solution</span>
+      </div>
+      <div class="thumb-card" data-slide-target="5" title="05 Prototype / Demo">
+        <span class="thumb-num">05</span>
+        <span class="thumb-title">Prototype</span>
+      </div>
+      <div class="thumb-card" data-slide-target="6" title="06 Technical Architecture">
+        <span class="thumb-num">06</span>
+        <span class="thumb-title">Architecture</span>
+      </div>
+      <div class="thumb-card" data-slide-target="7" title="07 Build Evidence &amp; Engineering">
+        <span class="thumb-num">07</span>
+        <span class="thumb-title">Build Proof</span>
+      </div>
+      <div class="thumb-card" data-slide-target="8" title="08 Security, Privacy &amp; Scale">
+        <span class="thumb-num">08</span>
+        <span class="thumb-title">Security</span>
+      </div>
+      <div class="thumb-card" data-slide-target="9" title="09 Market Opportunity &amp; Competitors">
+        <span class="thumb-num">09</span>
+        <span class="thumb-title">Market</span>
+      </div>
+      <div class="thumb-card" data-slide-target="10" title="10 Business Model &amp; GTM">
+        <span class="thumb-num">10</span>
+        <span class="thumb-title">GTM</span>
+      </div>
+      <div class="thumb-card" data-slide-target="11" title="11 Financial Model &amp; Team Cost">
+        <span class="thumb-num">11</span>
+        <span class="thumb-title">Financials</span>
+      </div>
+      <div class="thumb-card" data-slide-target="12" title="12 Roadmap, Ask &amp; Closing">
+        <span class="thumb-num">12</span>
+        <span class="thumb-title">Roadmap</span>
+      </div>
+      <div class="thumb-card" data-slide-target="13" title="13 Thank You">
+        <span class="thumb-num">13</span>
+        <span class="thumb-title">Thank You</span>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+    (function() {
+      const TOTAL_SLIDES = 13;
+      const slideData = [
+        {'num': 1,  'eyebrow': '01 · TEAM & BIG IDEA',                  'short': '01 Team & Big Idea'},
+        {'num': 2,  'eyebrow': '02 · PROBLEM STATEMENT',                'short': '02 Problem Statement'},
+        {'num': 3,  'eyebrow': '03 · TARGET USERS & VALIDATION',        'short': '03 Users & Validation'},
+        {'num': 4,  'eyebrow': '04 · PROPOSED SOLUTION',                'short': '04 Proposed Solution'},
+        {'num': 5,  'eyebrow': '05 · PROTOTYPE / DEMO',                 'short': '05 Prototype / Demo'},
+        {'num': 6,  'eyebrow': '06 · TECHNICAL ARCHITECTURE',           'short': '06 Tech Architecture'},
+        {'num': 7,  'eyebrow': '07 · BUILD EVIDENCE & ENGINEERING',     'short': '07 Build Evidence'},
+        {'num': 8,  'eyebrow': '08 · SECURITY, PRIVACY & SCALE',        'short': '08 Security & Scale'},
+        {'num': 9,  'eyebrow': '09 · MARKET OPPORTUNITY & COMPETITORS', 'short': '09 Market & Competitors'},
+        {'num': 10, 'eyebrow': '10 · BUSINESS MODEL & GTM',             'short': '10 Business Model & GTM'},
+        {'num': 11, 'eyebrow': '11 · FINANCIAL MODEL & TEAM COST',      'short': '11 Financial Model'},
+        {'num': 12, 'eyebrow': '12 · ROADMAP, ASK & CLOSING',           'short': '12 Roadmap & Ask'},
+        {'num': 13, 'eyebrow': '13 · THANK YOU',                        'short': '13 Thank You'}
+      ];
+      
+      let currentSlide = 1;
+      const slideFrames = document.querySelectorAll('.slide-frame');
+      const thumbCards = document.querySelectorAll('.thumb-card');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const currentNumSpan = document.getElementById('current-slide-num');
+      const eyebrowPill = document.getElementById('current-eyebrow');
+      const progressBar = document.getElementById('slide-progress-bar');
+      const hud = document.getElementById('presenter-hud');
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+      function goToSlide(n) {
+        if (n < 1) n = 1;
+        if (n > TOTAL_SLIDES) n = TOTAL_SLIDES;
+        if (n === currentSlide && document.querySelector('.slide-frame.active')) return;
+
+        currentSlide = n;
+
+        slideFrames.forEach((frame) => {
+          const slideNum = parseInt(frame.getAttribute('data-slide'), 10);
+          if (slideNum === currentSlide) {
+            frame.classList.add('active');
+          } else {
+            frame.classList.remove('active');
+          }
+        });
+
+        currentNumSpan.textContent = String(currentSlide).padStart(2, '0');
+        const info = slideData[currentSlide - 1];
+        eyebrowPill.textContent = (info.short || 'SLIDE').toUpperCase();
+
+        progressBar.style.width = ((currentSlide / TOTAL_SLIDES) * 100).toFixed(2) + '%';
+
+        prevBtn.disabled = (currentSlide === 1);
+        nextBtn.disabled = (currentSlide === TOTAL_SLIDES);
+
+        thumbCards.forEach((thumb) => {
+          const target = parseInt(thumb.getAttribute('data-slide-target'), 10);
+          if (target === currentSlide) {
+            thumb.classList.add('active');
+            thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          } else {
+            thumb.classList.remove('active');
+          }
+        });
+
+        history.replaceState(null, '', '#' + currentSlide);
+      }
+
+      function nextSlide() {
+        if (currentSlide < TOTAL_SLIDES) goToSlide(currentSlide + 1);
+      }
+
+      function prevSlide() {
+        if (currentSlide > 1) goToSlide(currentSlide - 1);
+      }
+
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+
+      thumbCards.forEach(thumb => {
+        thumb.addEventListener('click', () => {
+          const target = parseInt(thumb.getAttribute('data-slide-target'), 10);
+          goToSlide(target);
+        });
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        switch (e.key) {
+          case 'ArrowRight':
+          case 'ArrowDown':
+          case 'PageDown':
+          case ' ':
+            e.preventDefault();
+            nextSlide();
+            resetIdleTimer();
+            break;
+          case 'ArrowLeft':
+          case 'ArrowUp':
+          case 'PageUp':
+          case 'Backspace':
+            e.preventDefault();
+            prevSlide();
+            resetIdleTimer();
+            break;
+          case 'Home':
+            e.preventDefault();
+            goToSlide(1);
+            resetIdleTimer();
+            break;
+          case 'End':
+            e.preventDefault();
+            goToSlide(TOTAL_SLIDES);
+            resetIdleTimer();
+            break;
+          case 'f':
+          case 'F':
+            e.preventDefault();
+            toggleFullscreen();
+            resetIdleTimer();
+            break;
+        }
+      });
+
+      function updateFullscreenState() {
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+          document.body.classList.add('is-fullscreen');
+          if (hud) hud.style.display = 'none';
+        } else {
+          document.body.classList.remove('is-fullscreen');
+          if (hud) hud.style.display = '';
+        }
+      }
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          const el = document.documentElement;
+          if (el.requestFullscreen) {
+            el.requestFullscreen().catch(() => {});
+          } else if (el.webkitRequestFullscreen) {
+            el.webkitRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
+      }
+      fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+      document.addEventListener('fullscreenchange', updateFullscreenState);
+      document.addEventListener('webkitfullscreenchange', updateFullscreenState);
+      document.addEventListener('mozfullscreenchange', updateFullscreenState);
+      document.addEventListener('MSFullscreenChange', updateFullscreenState);
+
+      let idleTimer = null;
+      function showHud() {
+        if (document.fullscreenElement) return;
+        hud.classList.remove('idle-hidden');
+      }
+
+      function resetIdleTimer() {
+        if (document.fullscreenElement) return;
+        showHud();
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          hud.classList.add('idle-hidden');
+        }, 2500);
+      }
+
+      window.addEventListener('mousemove', resetIdleTimer);
+      window.addEventListener('touchstart', resetIdleTimer);
+      hud.addEventListener('mouseenter', () => {
+        clearTimeout(idleTimer);
+        showHud();
+      });
+      hud.addEventListener('mouseleave', resetIdleTimer);
+
+      const hashMatch = window.location.hash.match(/^#(\d+)$/);
+      if (hashMatch) {
+        const initial = parseInt(hashMatch[1], 10);
+        if (initial >= 1 && initial <= TOTAL_SLIDES) {
+          goToSlide(initial);
+        } else {
+          goToSlide(1);
+        }
+      } else {
+        goToSlide(1);
+      }
+
+      resetIdleTimer();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+/* ============================================================
+   TalentForge GTM Deck — Global Stylesheet
+   Style: Minimal & Bold (Apple-keynote-meets-corporate-blue)
+   Palette extracted from uploaded Business Study Case template
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Palette — from Business Study Case template */
+  --bg: #ffffff;
+  --bg-tint: #f5f9fd;          /* very light blue surface */
+  --bg-card: #f0f6fc;          /* light blue card surface */
+  --primary: #0062c3;          /* deep blue — template brand color */
+  --primary-dark: #0a3d7a;     /* deeper navy variant */
+  --accent: #5fc4fc;           /* lighter blue accent */
+  --accent-dark: #157ad6;      /* mid blue accent */
+  --ink: #0a1f3d;              /* primary text — deep navy */
+  --ink-soft: #4a5d75;         /* secondary text */
+  --ink-muted: #8794a8;        /* tertiary / labels */
+  --rule: #d6e1ee;             /* dividers / borders */
+  --white: #ffffff;
+
+  /* Typography tokens */
+  --font-heading: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-num: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+
+  /* Type scale — minimal & bold, BIG headlines */
+  --fs-display: 92px;    /* cover title */
+  --fs-h1: 64px;         /* section / page headline */
+  --fs-h2: 44px;         /* sub-headline */
+  --fs-h3: 28px;         /* card titles */
+  --fs-body: 20px;       /* body copy */
+  --fs-small: 16px;      /* secondary copy */
+  --fs-micro: 13px;      /* labels, captions, footnotes */
+
+  /* Spacing scale */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+  --space-2xl: 96px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1280px;
+  height: 720px;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* ============ SLIDE CANVAS ============ */
+.slide {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  background: var(--bg);
+  overflow: hidden;
+  padding: 64px 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide-tint { background: var(--bg-tint); }
+.slide-dark { background: var(--primary); color: var(--white); }
+.slide-dark .ink-text { color: rgba(255,255,255,0.85); }
+
+/* ============ SHARED COMPONENTS ============ */
+
+/* Top label — page identifier (e.g. "PROBLEM", "09 / 12") */
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.eyebrow-light { color: var(--accent); }
+.eyebrow-muted { color: var(--ink-muted); }
+
+/* Bottom rule + page number bar */
+.footer-bar {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  bottom: 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: var(--fs-micro);
+  color: var(--ink-muted);
+  letter-spacing: 0.05em;
+}
+.footer-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* Accent bar — vertical stripe next to titles */
+.accent-bar {
+  display: inline-block;
+  width: 6px;
+  height: 1em;
+  background: var(--primary);
+  margin-right: 16px;
+  vertical-align: middle;
+}
+
+/* Big stat tile */
+.stat-num {
+  font-family: var(--font-num);
+  font-weight: 800;
+  font-size: 96px;
+  line-height: 1;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+}
+.stat-label {
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+  margin-top: var(--space-xs);
+  line-height: 1.4;
+}
+
+/* Bullet — minimal dot + text */
+.bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--ink);
+}
+.bullet::before {
+  content: '';
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 11px;
+  background: var(--primary);
+  border-radius: 1px;
+}
+
+/* Speaker notes — hidden visually, present in DOM */
+aside[data-notes] {
+  display: none !important;
+}

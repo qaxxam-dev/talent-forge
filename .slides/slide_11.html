@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>Slide 11 — Pricing &amp; Customer Acquisition</title>
+  <link rel="stylesheet" href="global.css">
+  <script src="https://artifacts-cdn.chatglm.site/https://cdn.tailwindcss.com" data-z-original-src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .price-card {
+      border: 1px solid var(--rule);
+      background: #ffffff;
+      padding: 22px 24px 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      position: relative;
+    }
+    .price-card.featured {
+      border: 2px solid var(--primary);
+      padding: 21px 23px 21px 23px;
+    }
+    .price-badge {
+      position: absolute;
+      top: -12px;
+      left: 24px;
+      background: var(--primary);
+      color: #ffffff;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      line-height: 1;
+    }
+    .tier-name {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .price-num {
+      font-family: var(--font-num);
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.05;
+      letter-spacing: -0.015em;
+      margin-top: 4px;
+    }
+    .price-unit {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink-soft);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .price-desc {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--ink);
+      line-height: 1.55;
+      margin-top: 6px;
+      flex: 1;
+    }
+    .info-tile {
+      border: 1px solid var(--rule);
+      background: var(--bg-tint);
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .info-title {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+    .info-body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.grid{display:grid}.hidden{display:none}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.gap-5{gap:1.25rem}</style></head>
+<body>
+  <div class="slide">
+    <!-- Eyebrow -->
+    <div class="eyebrow">11 &nbsp;·&nbsp; PRICING &amp; ACQUISITION</div>
+
+    <!-- Headline -->
+    <h1 style="font-family: var(--font-heading); font-size: var(--fs-h1); font-weight: 800; line-height: 1.05; color: var(--ink); margin-top: 14px; max-width: 1020px; letter-spacing: -0.015em;">
+      Pay per verification. Scale with volume.
+    </h1>
+
+    <!-- 3 pricing cards -->
+    <div class="grid grid-cols-3 gap-5" style="margin-top: 32px;">
+      <!-- Card 1 -->
+      <div class="price-card">
+        <div class="tier-name">Per Verification</div>
+        <div class="price-num">₹500–₹800</div>
+        <div class="price-unit">per candidate</div>
+        <p class="price-desc">Transactional. Best for one-off drives or pilot usage.</p>
+      </div>
+
+      <!-- Card 2 — featured -->
+      <div class="price-card featured">
+        <div class="price-badge">Most Popular</div>
+        <div class="tier-name" style="color: var(--primary);">Per Drive Seat</div>
+        <div class="price-num">₹2L–₹5L</div>
+        <div class="price-unit">per drive</div>
+        <p class="price-desc">Unlimited verifications within a single campus drive. Volume discount applies.</p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="price-card">
+        <div class="tier-name">White-Label / API</div>
+        <div class="price-num">Custom</div>
+        <div class="price-unit">per ATS platform</div>
+        <p class="price-desc">Embedded API access for staffing firms and HR-tech platforms.</p>
+      </div>
+    </div>
+
+    <!-- 2 info tiles -->
+    <div class="grid grid-cols-2 gap-5" style="margin-top: 22px;">
+      <div class="info-tile">
+        <div class="info-title">CAC Logic</div>
+        <p class="info-body">Direct sales to staffing firms. ₹15K–₹25K CAC. Payback &lt; 3 drives.</p>
+      </div>
+      <div class="info-tile">
+        <div class="info-title">Retention Loop</div>
+        <p class="info-body">Verification dossier flows back into the candidate's ATS record. Each drive pulls the prior dossier forward - drives next-drive usage.</p>
+      </div>
+    </div>
+
+    <!-- Footer-bar -->
+    <div class="footer-bar">
+      <span>TALENTFORGE &nbsp;·&nbsp; BUSINESS GTM</span>
+      <span>11 / 12</span>
+    </div>
+  </div>
+
+  <aside data-notes="" class="hidden">
+    Our pricing follows the value unit: one verification, one charge. As volume goes up, the unit price drops. Transactional pricing per verification is five to eight hundred rupees per candidate — that's the pilot entry point. Per-drive seat pricing is two to five lakh rupees for unlimited verifications within a single drive — that's the staffing-firm default and our most popular tier. White-label API is custom pricing per ATS platform — that's the integration play. Customer acquisition cost through direct sales to staffing firms is fifteen to twenty-five thousand rupees. Payback is under three drives. And every dossier flows back into the ATS — so each drive naturally pulls the next one forward. That's the retention loop.
+  </aside>
+
+
+</body></html>
