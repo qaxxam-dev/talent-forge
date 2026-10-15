@@ -1,6 +1,9 @@
 import asyncio
+import io
 import re
-from typing import List
+from typing import List, Optional
+import docx
+import pypdf
 from core.exceptions import BadRequestException
 from core.llm import llm_service
 from core.pii import sanitize_text
@@ -11,6 +14,7 @@ from src.intake.schemas import (
     BatchIntakeResponseData,
     IntakeRequest,
     IntakeResponseData,
+    ParseResumeResponseData,
     SkillGap,
     SkillGapAnalysis,
 )
@@ -430,12 +434,76 @@ CAMPUS_DRIVE_PRESET_CANDIDATES = [
 ]
 
 
+EMAIL_REGEX = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
+PHONE_REGEX = re.compile(r"(?:\+?\d{1,3}[-.\s]?)?\(?\d{3,5}\)?[-.\s]?\d{3,5}[-.\s]?\d{3,5}")
+
+
 class IntakeService:
     @staticmethod
     def is_valid_github_url(url: str | None) -> bool:
         if not url:
             return False
         return bool(GITHUB_REPO_RE.match(url.strip()))
+
+    def parse_resume_file(self, filename: str, content: bytes) -> ParseResumeResponseData:
+        ext = filename.lower().split(".")[-1] if "." in filename else "txt"
+        extracted_text = ""
+
+        try:
+            if ext == "pdf":
+                reader = pypdf.PdfReader(io.BytesIO(content))
+                pages = []
+                for p in reader.pages:
+                    txt = p.extract_text()
+                    if txt:
+                        pages.append(txt)
+                extracted_text = "\n\n".join(pages).strip()
+            elif ext in ["docx", "doc"]:
+                doc = docx.Document(io.BytesIO(content))
+                paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+                extracted_text = "\n".join(paragraphs).strip()
+            else:
+                extracted_text = content.decode("utf-8", errors="replace").strip()
+        except Exception as e:
+            raise BadRequestException(f"Failed to parse resume document ({filename}): {str(e)}")
+
+        if not extracted_text:
+            raise BadRequestException("Uploaded document contains no readable text or is an empty/scanned document.")
+
+        # Detect email
+        email_match = EMAIL_REGEX.search(extracted_text)
+        detected_email = email_match.group(0) if email_match else None
+
+        # Detect phone
+        phone_match = PHONE_REGEX.search(extracted_text)
+        detected_phone = phone_match.group(0) if phone_match else None
+
+        # Detect GitHub repo
+        gh_match = GITHUB_REPO_RE.search(extracted_text)
+        detected_github = gh_match.group(0) if gh_match else None
+
+        # Detect Name heuristic (first short line with 2-3 words before email)
+        detected_name = None
+        for line in extracted_text.split("\n")[:6]:
+            clean = line.strip()
+            words = clean.split()
+            if 2 <= len(words) <= 4 and all(re.match(r"^[A-Za-z.'-]+$", w) for w in words):
+                # Ensure not a common header
+                if clean.lower() not in ["curriculum vitae", "resume", "summary", "profile", "contact information"]:
+                    detected_name = clean
+                    break
+
+        words_count = len(extracted_text.split())
+
+        return ParseResumeResponseData(
+            raw_text=extracted_text,
+            detected_name=detected_name,
+            detected_email=detected_email,
+            detected_phone=detected_phone,
+            detected_github=detected_github,
+            file_name=filename,
+            word_count=words_count,
+        )
 
     async def process_intake(
         self, request: IntakeRequest
@@ -460,11 +528,20 @@ class IntakeService:
             location=request.location,
         )
 
-        # 3. LLM Skill-Gap Analysis
+        # 3. LLM Skill-Gap Analysis with Forensic Authenticity & Claim Verification
         system_instruction = (
-            "You are a rigorous technical hiring analyst. Analyze the sanitized candidate profile "
-            "against the target job description. Identify acquired skills present in the profile, "
-            "and identify actionable critical and high skill gaps that must be verified. "
+            "You are a rigorous technical hiring forensic auditor. Analyze the sanitized candidate profile "
+            "against the target job description to detect ATS keyword stuffing and evaluate true hands-on capability.\n"
+            "Key forensic evaluation rules:\n"
+            "1. 'acquired_skills': ONLY list skills backed by demonstrable project deliverables, code context, "
+            "or quantifiable architectural work in the profile.\n"
+            "2. 'unsubstantiated_claims': Identify keywords and technologies claimed in skills lists or summary paragraphs "
+            "that lack concrete project implementation details or verifiable deliverables in the text.\n"
+            "3. 'critical_gaps': Essential capabilities strictly required by the JD that the candidate does not demonstrably possess.\n"
+            "4. 'high_gaps': Important missing capabilities OR high-risk unproven claims (from unsubstantiated_claims) "
+            "that require technical defense during the code viva.\n"
+            "5. 'match_percentage': Honest Day-Zero readiness score (0-100). Penalize profiles that rely on unevidenced buzzwords.\n"
+            "6. 'authenticity_notes': 1-2 sentence objective assessment of candidate evidence depth vs. ATS keyword stuffing.\n"
             "Return only valid JSON matching the schema."
         )
 
@@ -475,11 +552,13 @@ TARGET JOB DESCRIPTION:
 SANITIZED CANDIDATE PROFILE:
 {sanitization.sanitized_text}
 
-Analyze the candidate's Day-Zero readiness for this role.
-- Calculate match_percentage (0 to 100).
-- Extract acquired_skills (list of concrete skills evident in the profile).
-- Extract critical_gaps (essential missing requirements without which the candidate cannot succeed).
-- Extract high_gaps (important missing or unproven requirements).
+Perform an evidence-grounded forensic skill gap audit:
+- Extract acquired_skills (proven hands-on skills with project evidence).
+- Extract unsubstantiated_claims (buzzwords or tools claimed without project implementation context).
+- Extract critical_gaps (essential requirements missing from the candidate's demonstrable work).
+- Extract high_gaps (important missing areas or unproven claims that must be challenged in technical defense).
+- Calculate match_percentage (0 to 100 based on verified competence, not raw keyword mentions).
+- Provide authenticity_notes (brief forensic commentary on claim authenticity).
 """
 
         analysis_dict, meta = await llm_service.generate_structured(

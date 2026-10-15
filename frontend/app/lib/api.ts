@@ -27,6 +27,16 @@ export interface IntakeResponseData {
   suggested_path: "kanban" | "repo";
 }
 
+export interface ParseResumeResponse {
+  raw_text: string;
+  detected_name?: string | null;
+  detected_email?: string | null;
+  detected_phone?: string | null;
+  detected_github?: string | null;
+  file_name: string;
+  word_count: number;
+}
+
 export class ApiClientError extends Error {
   status: number;
   code?: string;
@@ -158,6 +168,34 @@ export const api = {
       throw new ApiClientError("Missing response data from intake endpoint", 500);
     }
     return res.data;
+  },
+
+  async parseResumeFile(file: File): Promise<ParseResumeResponse> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/v1/parse-resume", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.status === 429) {
+      throw new ApiClientError("Rate limit exceeded while uploading resume", 429);
+    }
+
+    let json: any;
+    try {
+      json = await response.json();
+    } catch {
+      throw new ApiClientError(`Server error (${response.status})`, response.status);
+    }
+
+    if (!response.ok || !json.success || !json.data) {
+      const msg = json.error?.message || json.error || "Failed to parse resume document";
+      throw new ApiClientError(msg, response.status);
+    }
+
+    return json.data;
   },
 
   async generateSpec(payload: GenerateSpecPayload): Promise<GenerateSpecResponseData> {

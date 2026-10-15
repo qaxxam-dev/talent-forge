@@ -41,7 +41,7 @@ import {
 } from "@/stores/sessionStore";
 
 const TOKEN_PATTERN = /(\[REDACTED_[A-Z_]+\])/g;
-const ACCEPTED_FILE = /\.(txt|md)$/i;
+const ACCEPTED_FILE = /\.(pdf|docx|doc|txt|md)$/i;
 
 function HighlightedText({ text }: { text: string }) {
   if (!text) {
@@ -135,7 +135,9 @@ export function IntakeScreen() {
   const [fileError, setFileError] = React.useState<string | null>(null);
   const [isPending, setIsPending] = React.useState(false);
   const [isBatchPending, setIsBatchPending] = React.useState(false);
+  const [isParsingFile, setIsParsingFile] = React.useState(false);
   const [dragging, setDragging] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Batch filter controls
   const [filterMode, setFilterMode] = React.useState<"all" | "shortlist" | "repo" | "kanban">("all");
@@ -215,19 +217,39 @@ export function IntakeScreen() {
   // File drop / upload parser
   async function loadFile(file: File) {
     if (!ACCEPTED_FILE.test(file.name)) {
-      setFileError("Upload supports .txt and .md files. Or simply paste the resume text.");
+      setFileError("Upload supports PDF, Word (.docx), Markdown (.md), and Plain Text (.txt) files.");
       toast.error("Unsupported file format", {
-        description: "Please paste text directly or drop a .txt / .md file.",
+        description: "Please drop a .pdf, .docx, .md, or .txt file, or paste text directly.",
       });
       return;
     }
     setFileError(null);
+    setIsParsingFile(true);
     try {
-      const text = await file.text();
-      setResume(text);
-      toast.success(`Imported ${file.name}`);
-    } catch {
-      setFileError("Failed to read file.");
+      if (/\.(pdf|docx|doc)$/i.test(file.name)) {
+        toast.info(`Parsing ${file.name}...`, {
+          description: "Extracting resume text, candidate details, and links.",
+        });
+        const parsed = await api.parseResumeFile(file);
+        setResume(parsed.raw_text);
+        if (parsed.detected_name && !name) setName(parsed.detected_name);
+        if (parsed.detected_github && !github) setGithub(parsed.detected_github);
+        toast.success(`Imported ${file.name}`, {
+          description: `Extracted ${parsed.word_count} words.${
+            parsed.detected_name ? ` Detected: ${parsed.detected_name}` : ""
+          }`,
+        });
+      } else {
+        const text = await file.text();
+        setResume(text);
+        toast.success(`Imported ${file.name}`);
+      }
+    } catch (err: any) {
+      const msg = err.message || "Failed to read file.";
+      setFileError(msg);
+      toast.error("File parsing failed", { description: msg });
+    } finally {
+      setIsParsingFile(false);
     }
   }
 
@@ -781,14 +803,42 @@ export function IntakeScreen() {
                 </div>
 
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="resume-text" className="text-xs">
-                      Resume Text (Raw)
+                    <Label htmlFor="resume-text" className="text-xs font-medium">
+                      Resume Text (Raw or Extracted)
                     </Label>
-                    <span className="text-[10px] text-muted-foreground">
-                      {resume.split(/\s+/).filter(Boolean).length} words
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {resume.split(/\s+/).filter(Boolean).length} words
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={isParsingFile}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-6 text-[11px] px-2 gap-1"
+                      >
+                        {isParsingFile ? (
+                          <IconRefresh className="size-3 animate-spin" />
+                        ) : (
+                          <IconUpload className="size-3" />
+                        )}
+                        Upload File (.pdf, .docx, .txt)
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,.docx,.doc,.txt,.md"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) void loadFile(f);
+                          e.target.value = "";
+                        }}
+                      />
+                    </div>
                   </div>
                   <div
                     onDragOver={(e) => {
@@ -797,16 +847,22 @@ export function IntakeScreen() {
                     }}
                     onDragLeave={() => setDragging(false)}
                     onDrop={handleDrop}
-                    className={`relative rounded-lg border transition-colors ${
+                    className={`relative rounded-lg border transition-all ${
                       dragging
-                        ? "border-primary bg-primary/5"
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/20"
                         : "border-border/80 bg-background"
                     }`}
                   >
+                    {isParsingFile && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-xs rounded-lg gap-2 text-xs font-medium text-foreground">
+                        <IconRefresh className="size-5 animate-spin text-primary" />
+                        <span>Parsing document text & structure...</span>
+                      </div>
+                    )}
                     <Textarea
                       id="resume-text"
                       rows={9}
-                      placeholder="Paste raw candidate resume text here, or drag-and-drop a .txt or .md file..."
+                      placeholder="Paste raw candidate resume text here, or drag-and-drop a .pdf, .docx, or .txt file..."
                       value={resume}
                       onChange={(e) => setResume(e.target.value)}
                       className="text-xs border-0 focus-visible:ring-0 resize-none font-sans"
@@ -934,7 +990,7 @@ export function IntakeScreen() {
                 </div>
 
                 {skillGapAnalysis && (
-                  <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+                  <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3.5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold uppercase text-primary tracking-wider">
                         Day-Zero Match: {skillGapAnalysis.match_percentage}%
@@ -955,12 +1011,74 @@ export function IntakeScreen() {
                       </Button>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5">
-                      {skillGapAnalysis.critical_gaps.map((gap, i) => (
-                        <Badge key={i} variant="destructive" className="text-[10px]">
-                          {gap.name}
-                        </Badge>
-                      ))}
+                    {skillGapAnalysis.authenticity_notes && (
+                      <div className="rounded-lg border border-border/70 bg-card/60 p-2.5 text-xs text-foreground space-y-1">
+                        <div className="flex items-center gap-1.5 font-semibold text-primary text-[11px] uppercase tracking-wider">
+                          <IconShieldCheck className="size-3.5 text-primary" />
+                          Forensic Authenticity Assessment
+                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          {skillGapAnalysis.authenticity_notes}
+                        </p>
+                      </div>
+                    )}
+
+                    {skillGapAnalysis.acquired_skills.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                          <IconCheck className="size-3 text-emerald-500" />
+                          Demonstrated Competencies ({skillGapAnalysis.acquired_skills.length})
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {skillGapAnalysis.acquired_skills.map((s, i) => (
+                            <Badge
+                              key={i}
+                              variant="outline"
+                              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]"
+                            >
+                              {s}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {skillGapAnalysis.unsubstantiated_claims &&
+                      skillGapAnalysis.unsubstantiated_claims.length > 0 && (
+                        <div className="space-y-1.5">
+                          <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                            <IconAlertTriangle className="size-3" />
+                            Unsubstantiated Claims / ATS Keywords ({skillGapAnalysis.unsubstantiated_claims.length})
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {skillGapAnalysis.unsubstantiated_claims.map((s, i) => (
+                              <Badge
+                                key={i}
+                                variant="outline"
+                                className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px]"
+                              >
+                                {s} (Unverified)
+                              </Badge>
+                            ))}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground italic">
+                            Claimed without project evidence. Automatically routed into Kanban & Viva defense.
+                          </p>
+                        </div>
+                      )}
+
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] font-semibold text-destructive flex items-center gap-1">
+                        <IconAlertTriangle className="size-3" />
+                        Critical Gaps to Bridge ({skillGapAnalysis.critical_gaps.length})
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {skillGapAnalysis.critical_gaps.map((gap, i) => (
+                          <Badge key={i} variant="destructive" className="text-[10px]">
+                            {gap.name}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}

@@ -16,8 +16,10 @@ export interface SkillGap {
 export interface SkillGapAnalysis {
   match_percentage: number;
   acquired_skills: string[];
+  unsubstantiated_claims?: string[];
   critical_gaps: SkillGap[];
   high_gaps: SkillGap[];
+  authenticity_notes?: string;
 }
 
 export interface TaskItem {
@@ -251,7 +253,7 @@ interface EvaluationSessionState {
 }
 
 const initialState = {
-  isBatchMode: true,
+  isBatchMode: false,
   batchCandidates: [],
   activeCandidateId: null,
   candidateName: "",

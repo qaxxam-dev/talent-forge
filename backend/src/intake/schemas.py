@@ -19,14 +19,30 @@ class SkillGapAnalysis(BaseModel):
         ge=0, le=100, description="Estimated match percentage from 0 to 100"
     )
     acquired_skills: List[str] = Field(
-        default_factory=list, description="Skills verified in candidate profile"
+        default_factory=list, description="Skills verified with concrete project context"
+    )
+    unsubstantiated_claims: List[str] = Field(
+        default_factory=list, description="Keywords or tools claimed without verifiable project evidence"
     )
     critical_gaps: List[SkillGap] = Field(
         default_factory=list, description="Critical missing capabilities"
     )
     high_gaps: List[SkillGap] = Field(
-        default_factory=list, description="High-priority missing capabilities"
+        default_factory=list, description="High-priority missing capabilities or unproven claims"
     )
+    authenticity_notes: Optional[str] = Field(
+        default=None, description="Forensic note on evidence depth vs buzzwords"
+    )
+
+
+class ParseResumeResponseData(BaseModel):
+    raw_text: str
+    detected_name: Optional[str] = None
+    detected_email: Optional[str] = None
+    detected_phone: Optional[str] = None
+    detected_github: Optional[str] = None
+    file_name: str
+    word_count: int
 
 
 class IntakeRequest(BaseModel):
