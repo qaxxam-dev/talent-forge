@@ -21,10 +21,15 @@ echo "🚀 Starting TalentForge Production Servers"
 echo "=================================================="
 
 # Ensure ports 8001 and 3000 are free from zombie processes
-fuser -k 8001/tcp 2>/dev/null || true
-fuser -k 3000/tcp 2>/dev/null || true
+fuser -k 8001/tcp 2>/dev/null || lsof -ti:8001 | xargs kill -9 2>/dev/null || true
+fuser -k 3000/tcp 2>/dev/null || lsof -ti:3000 | xargs kill -9 2>/dev/null || true
 
-# 1. Build frontend if not built yet
+# 1. Install dependencies & build frontend if needed
+if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
+  echo "📦 Installing frontend dependencies..."
+  (cd "$FRONTEND_DIR" && npm install --production=false)
+fi
+
 if [ ! -d "$FRONTEND_DIR/build" ]; then
   echo "📦 Building frontend production bundle..."
   (cd "$FRONTEND_DIR" && npm run build)
