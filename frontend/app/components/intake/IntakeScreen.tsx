@@ -778,9 +778,9 @@ export function IntakeScreen() {
                   </div>
 
                   {priorVerificationData && (
-                    <div className="rounded-md border border-blue-500/30 bg-blue-500/10 p-2.5 text-xs text-foreground space-y-1 mt-1.5">
+                    <div className="rounded-lg border border-border bg-card p-3 text-xs text-foreground space-y-1.5 mt-2 shadow-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                        <span className="font-semibold text-foreground flex items-center gap-1.5">
                           <IconCheck className="size-3.5 stroke-[2.5]" />
                           Pre-Verified Competencies: {priorVerificationData.target_role}
                         </span>
@@ -790,7 +790,7 @@ export function IntakeScreen() {
                             setPriorId("");
                             setPriorVerification("", null);
                           }}
-                          className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                          className="text-[11px] text-muted-foreground hover:text-foreground underline transition-colors"
                         >
                           Clear
                         </button>
@@ -983,21 +983,26 @@ export function IntakeScreen() {
 
                 <div>
                   <h4 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                    <IconShieldCheck className="size-4 text-emerald-500" />
+                    <IconShieldCheck className="size-4 text-muted-foreground" />
                     Redacted Identifier Registry ({preview.redactedTokens.length})
                   </h4>
                   <TokenRegistry tokens={preview.redactedTokens} />
                 </div>
 
                 {skillGapAnalysis && (
-                  <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase text-primary tracking-wider">
-                        Day-Zero Match: {skillGapAnalysis.match_percentage}%
-                      </span>
+                  <div className="mt-5 pt-4 border-t border-border space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-semibold text-foreground tracking-tight">
+                          Day-Zero Match Assessment
+                        </span>
+                        <Badge variant="secondary" className="font-mono text-xs font-semibold">
+                          {skillGapAnalysis.match_percentage}% Match
+                        </Badge>
+                      </div>
                       <Button
                         size="sm"
-                        className="h-7 text-xs gap-1 font-semibold"
+                        className="h-8 text-xs gap-1.5 font-medium shrink-0 self-start sm:self-auto"
                         onClick={() => {
                           if (suggestedPath === "repo") {
                             navigate("/repo-analysis");
@@ -1007,34 +1012,33 @@ export function IntakeScreen() {
                         }}
                       >
                         Proceed to {suggestedPath === "repo" ? "Repo Audit" : "Kanban"}
-                        <IconArrowRight className="size-3" />
+                        <IconArrowRight className="size-3.5" />
                       </Button>
                     </div>
 
                     {skillGapAnalysis.authenticity_notes && (
-                      <div className="rounded-lg border border-border/70 bg-card/60 p-2.5 text-xs text-foreground space-y-1">
-                        <div className="flex items-center gap-1.5 font-semibold text-primary text-[11px] uppercase tracking-wider">
-                          <IconShieldCheck className="size-3.5 text-primary" />
+                      <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-1 text-xs">
+                        <div className="flex items-center gap-1.5 font-semibold text-foreground text-xs">
+                          <IconShieldCheck className="size-3.5 text-muted-foreground" />
                           Forensic Authenticity Assessment
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           {skillGapAnalysis.authenticity_notes}
                         </p>
                       </div>
                     )}
 
                     {skillGapAnalysis.acquired_skills.length > 0 && (
-                      <div className="space-y-1.5">
-                        <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
-                          <IconCheck className="size-3 text-emerald-500" />
+                      <div className="space-y-2">
+                        <span className="text-xs font-medium text-foreground flex items-center gap-1.5">
                           Demonstrated Competencies ({skillGapAnalysis.acquired_skills.length})
                         </span>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {skillGapAnalysis.acquired_skills.map((s, i) => (
                             <Badge
                               key={i}
-                              variant="outline"
-                              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]"
+                              variant="secondary"
+                              className="text-xs font-normal"
                             >
                               {s}
                             </Badge>
@@ -1045,41 +1049,45 @@ export function IntakeScreen() {
 
                     {skillGapAnalysis.unsubstantiated_claims &&
                       skillGapAnalysis.unsubstantiated_claims.length > 0 && (
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                            <IconAlertTriangle className="size-3" />
-                            Unsubstantiated Claims / ATS Keywords ({skillGapAnalysis.unsubstantiated_claims.length})
+                        <div className="space-y-2">
+                          <span className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                            Unsubstantiated Claims ({skillGapAnalysis.unsubstantiated_claims.length})
                           </span>
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1.5">
                             {skillGapAnalysis.unsubstantiated_claims.map((s, i) => (
                               <Badge
                                 key={i}
                                 variant="outline"
-                                className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px]"
+                                className="border-border text-xs font-normal"
                               >
-                                {s} (Unverified)
+                                {s}
                               </Badge>
                             ))}
                           </div>
-                          <p className="text-[10px] text-muted-foreground italic">
-                            Claimed without project evidence. Automatically routed into Kanban & Viva defense.
+                          <p className="text-[11px] text-muted-foreground">
+                            Claimed without project evidence. Routed into Kanban & Viva defense.
                           </p>
                         </div>
                       )}
 
-                    <div className="space-y-1.5">
-                      <span className="text-[11px] font-semibold text-destructive flex items-center gap-1">
-                        <IconAlertTriangle className="size-3" />
-                        Critical Gaps to Bridge ({skillGapAnalysis.critical_gaps.length})
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {skillGapAnalysis.critical_gaps.map((gap, i) => (
-                          <Badge key={i} variant="destructive" className="text-[10px]">
-                            {gap.name}
-                          </Badge>
-                        ))}
+                    {skillGapAnalysis.critical_gaps && skillGapAnalysis.critical_gaps.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                          Critical Gaps ({skillGapAnalysis.critical_gaps.length})
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {skillGapAnalysis.critical_gaps.map((gap, i) => (
+                            <Badge
+                              key={i}
+                              variant="outline"
+                              className="border-border text-xs font-normal"
+                            >
+                              {gap.name}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>

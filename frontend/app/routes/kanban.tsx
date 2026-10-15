@@ -240,17 +240,19 @@ export default function KanbanRoute() {
 
         {/* Knowledge Reuse Banner */}
         {preVerifiedCount > 0 && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3.5 py-2.5 text-xs text-foreground">
-            <div className="flex items-center gap-2">
-              <span className="flex size-2 rounded-full bg-blue-500 shrink-0 animate-pulse" />
-              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                Knowledge Reuse Active:
-              </span>
-              <span className="text-muted-foreground">
-                {preVerifiedCount} tickets pre-verified from prior evaluation ({priorVerificationId || "TF-VERIFY-20261012-8821"}). Viva evaluates only newly tested deliverables (Delta Viva).
-              </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border bg-card p-3.5 text-xs text-foreground shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="flex size-2 rounded-full bg-primary shrink-0 animate-pulse" />
+              <div>
+                <span className="font-semibold text-foreground">
+                  Knowledge Reuse Active:{" "}
+                </span>
+                <span className="text-muted-foreground">
+                  {preVerifiedCount} tickets pre-verified from prior evaluation ({priorVerificationId || "TF-VERIFY-20261012-8821"}). Viva evaluates only newly tested deliverables (Delta Viva).
+                </span>
+              </div>
             </div>
-            <Badge variant="outline" className="border-blue-500/40 text-blue-600 dark:text-blue-400 font-mono text-[10px] shrink-0 self-start sm:self-auto">
+            <Badge variant="secondary" className="font-mono text-[11px] shrink-0 self-start sm:self-auto border border-border">
               Delta Viva Unlocked
             </Badge>
           </div>
@@ -264,31 +266,18 @@ export default function KanbanRoute() {
                 <span className="font-semibold text-foreground">
                   {verifiedCount} of 2 tasks verified
                 </span>
-                {preVerifiedCount > 0 && (
-                  <span className="text-blue-600 dark:text-blue-400 text-[11px] font-medium ml-1.5">
-                    ({preVerifiedCount} pre-verified · {freshlyVerifiedCount} freshly verified)
-                  </span>
-                )}
                 {" · "}
-                <span className={vivaUnlocked ? "text-emerald-500 font-semibold" : "text-muted-foreground"}>
+                <span className={vivaUnlocked ? "text-foreground font-semibold" : "text-muted-foreground"}>
                   {vivaUnlocked ? "Ready for Viva" : `Need ${Math.max(0, 2 - verifiedCount)} to unlock Viva`}
                 </span>
-
-                {sanitizedTasks.length > 0 && (
-                  <span className="text-muted-foreground/60 text-[11px] ml-1.5">
-                    ({sanitizedTasks.length} total tickets)
-                  </span>
-                )}
               </span>
-              <span className={`font-mono text-xs font-semibold ${vivaUnlocked ? "text-emerald-500" : "text-amber-500"}`}>
+              <span className={`font-mono text-xs font-semibold ${vivaUnlocked ? "text-foreground" : "text-muted-foreground"}`}>
                 {vivaUnlocked ? "Unlocked" : "Locked"}
               </span>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
-                className={`h-full transition-all duration-500 ${
-                  vivaUnlocked ? "bg-emerald-500" : "bg-primary"
-                }`}
+                className="h-full transition-all duration-500 bg-primary"
                 style={{ width: `${Math.min(100, (verifiedCount / 2) * 100)}%` }}
               />
             </div>
@@ -298,7 +287,7 @@ export default function KanbanRoute() {
             {vivaUnlocked ? (
               <Button
                 onClick={() => navigate("/viva")}
-                className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-8 sm:h-9 shadow-xs"
+                className="gap-1.5 font-medium text-xs h-8 sm:h-9 shadow-xs"
               >
                 Continue to Viva
                 <IconArrowRight className="size-4" />

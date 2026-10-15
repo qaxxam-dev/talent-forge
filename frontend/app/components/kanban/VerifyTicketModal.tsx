@@ -273,16 +273,16 @@ async def test_idempotent_ledger_deduplication():
             <div
               className={`rounded-xl border p-4 space-y-2.5 text-xs transition-all ${
                 auditResult.is_verified
-                  ? "border-emerald-500/30 bg-emerald-500/5"
-                  : "border-destructive/30 bg-destructive/5"
+                  ? "border-border bg-muted/30"
+                  : "border-border bg-card"
               }`}
             >
               <div className="flex items-center justify-between border-b border-border/50 pb-2">
                 <span
                   className={`font-semibold text-sm flex items-center gap-1.5 ${
                     auditResult.is_verified
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-destructive"
+                      ? "text-foreground"
+                      : "text-foreground"
                   }`}
                 >
                   {auditResult.is_verified ? (
@@ -296,8 +296,8 @@ async def test_idempotent_ledger_deduplication():
                   variant="outline"
                   className={`font-mono text-xs ${
                     auditResult.is_verified
-                      ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
-                      : "border-destructive text-destructive"
+                      ? "border-border text-foreground"
+                      : "border-border text-foreground"
                   }`}
                 >
                   Score: {auditResult.verification_score}%
@@ -310,7 +310,7 @@ async def test_idempotent_ledger_deduplication():
 
               {auditResult.strengths.length > 0 && (
                 <div className="space-y-1 pt-1">
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider block">
                     Verified Capabilities
                   </span>
                   <ul className="list-disc list-inside space-y-0.5 text-muted-foreground text-[11px]">
@@ -374,7 +374,7 @@ async def test_idempotent_ledger_deduplication():
             size="sm"
             disabled={!code.trim() || isAuditing}
             onClick={handleConfirmVerification}
-            className="text-xs gap-1.5 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs"
+            className="text-xs gap-1.5 font-semibold shadow-2xs"
           >
             <IconCheck className="size-3.5 stroke-[2.5]" />
             Lock Verified Deliverable

@@ -52,8 +52,8 @@ export function TicketCard({ task, onEdit, onVerify }: TicketCardProps) {
       case "verified":
         return (
           <Badge
-            variant="outline"
-            className="border-emerald-500/40 bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 text-[10px] font-mono uppercase tracking-wider gap-1"
+            variant="secondary"
+            className="text-foreground text-[10px] font-mono uppercase tracking-wider gap-1"
           >
             <IconCheck className="size-3 stroke-[3]" />
             Verified
@@ -62,10 +62,10 @@ export function TicketCard({ task, onEdit, onVerify }: TicketCardProps) {
       case "pre_verified":
         return (
           <Badge
-            variant="outline"
-            className="border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-mono uppercase tracking-wider gap-1"
+            variant="secondary"
+            className="border-border text-foreground text-[10px] font-mono uppercase tracking-wider gap-1"
           >
-            <IconShieldCheck className="size-3 stroke-[2.5]" />
+            <IconShieldCheck className="size-3 text-muted-foreground stroke-[2.5]" />
             Pre-Verified
           </Badge>
         );
@@ -101,7 +101,7 @@ export function TicketCard({ task, onEdit, onVerify }: TicketCardProps) {
             size="sm"
             variant="default"
             onClick={handleCycleStatus}
-            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1 font-medium shadow-2xs"
+            className="h-7 text-xs gap-1 font-medium shadow-2xs"
           >
             <IconCheck className="size-3.5 stroke-[2.5]" />
             Verify
@@ -121,7 +121,7 @@ export function TicketCard({ task, onEdit, onVerify }: TicketCardProps) {
       case "pre_verified":
         return (
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 flex items-center gap-1 font-semibold">
+            <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1 font-semibold">
               <IconCheck className="size-3" />
               Carried Over
             </span>
@@ -185,17 +185,17 @@ export function TicketCard({ task, onEdit, onVerify }: TicketCardProps) {
 
         {/* Pre-Verified Provenance Badge */}
         {task.pre_verified_source && (
-          <div className="flex items-center gap-1.5 rounded-md border border-blue-500/20 bg-blue-500/10 px-2 py-1 text-[11px] text-blue-600 dark:text-blue-400 truncate">
-            <IconShieldCheck className="size-3.5 shrink-0" />
-            <span className="truncate font-mono">
-              Carried over from {task.pre_verified_source.verification_id}
+          <div className="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-1 text-[11px] text-foreground truncate">
+            <IconShieldCheck className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="truncate font-mono text-muted-foreground">
+              Carried over from <span className="text-foreground font-medium">{task.pre_verified_source.verification_id}</span>
             </span>
           </div>
         )}
 
         {/* Notes / Submission Link if present */}
         {task.notes && !task.pre_verified_source && (
-          <div className="flex items-center gap-1.5 rounded bg-primary/5 px-2 py-1 text-[11px] text-primary truncate">
+          <div className="flex items-center gap-1.5 rounded border border-border bg-muted/30 px-2 py-1 text-[11px] text-muted-foreground truncate">
             <IconLink className="size-3 shrink-0" />
             <span className="truncate">{task.notes}</span>
           </div>
@@ -204,13 +204,13 @@ export function TicketCard({ task, onEdit, onVerify }: TicketCardProps) {
 
         {/* AI Code Verification Result if verified */}
         {task.verification_score !== undefined && (
-          <div className="flex items-center justify-between rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-[11px] text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-[11px] text-foreground">
             <span className="font-semibold flex items-center gap-1">
-              <IconShieldCheck className="size-3.5 stroke-[2.5]" />
+              <IconShieldCheck className="size-3.5 stroke-[2.5] text-muted-foreground" />
               Audited: {task.verification_score}%
             </span>
             {task.rubric_feedback && (
-              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 truncate max-w-[150px]" title={task.rubric_feedback}>
+              <span className="text-[10px] text-muted-foreground truncate max-w-[150px]" title={task.rubric_feedback}>
                 {task.rubric_feedback}
               </span>
             )}

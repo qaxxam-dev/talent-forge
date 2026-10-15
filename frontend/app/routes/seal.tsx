@@ -202,7 +202,7 @@ export default function SealRoute() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span
-                  className="size-2 rounded-full bg-emerald-500/80 ring-2 ring-emerald-500/20 shrink-0"
+                  className="size-2 rounded-full bg-primary shrink-0"
                   title="Cryptographically Verified"
                 />
                 <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
@@ -231,14 +231,14 @@ export default function SealRoute() {
                   onClick={handleCopyId}
                   title="Copy Verification ID"
                 >
-                  {copied ? <IconCheck className="size-3 text-emerald-500" /> : <IconCopy className="size-3" />}
+                  {copied ? <IconCheck className="size-3 text-primary" /> : <IconCopy className="size-3" />}
                 </Button>
               </div>
 
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 px-2.5 text-xs gap-1.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                className="h-8 px-2.5 text-xs gap-1.5 border-border"
                 onClick={handleVerifyLookup}
                 disabled={isVerifyingLookup}
               >
@@ -250,23 +250,23 @@ export default function SealRoute() {
 
           {/* Live Registry Confirmation Banner */}
           {lookupResult && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 space-y-2.5 text-xs animate-in fade-in">
+            <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2.5 text-xs animate-in fade-in">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-                  <IconCheck className="size-4 stroke-[3] text-emerald-600" />
-                  SQLite Ledger Record Authenticated ({lookupResult.verification_id})
+                <span className="font-semibold text-foreground flex items-center gap-1.5">
+                  <IconCheck className="size-4 stroke-[3]" />
+                  Ledger Record Authenticated ({lookupResult.verification_id})
                 </span>
-                <Badge variant="outline" className="border-emerald-500/50 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-[10px]">
+                <Badge variant="secondary" className="font-mono text-[10px]">
                   {lookupResult.status}
                 </Badge>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono text-muted-foreground pt-1">
                 <div>Candidate: <span className="text-foreground font-semibold">{lookupResult.candidate_name}</span></div>
                 <div>Role: <span className="text-foreground">{lookupResult.target_role}</span></div>
-                <div>Readiness Score: <span className="text-emerald-600 font-bold">{lookupResult.day_zero_score}%</span></div>
+                <div>Readiness Score: <span className="text-foreground font-bold">{lookupResult.day_zero_score}%</span></div>
                 <div>Algorithm: <span className="text-foreground">{lookupResult.algorithm}</span></div>
               </div>
-              <p className="text-[11px] text-muted-foreground italic pt-1 border-t border-emerald-500/20">
+              <p className="text-[11px] text-muted-foreground italic pt-1 border-t border-border">
                 "{lookupResult.audit_summary}"
               </p>
             </div>

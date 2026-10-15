@@ -96,6 +96,25 @@ async function fetchJson<T>(url: string, options: RequestInit): Promise<APIRespo
   return json;
 }
 
+export interface ChallengeIdea {
+  id: string;
+  title: string;
+  tagline: string;
+  problem_statement: string;
+  tech_stack_focus: string;
+  targeted_skills?: string[];
+}
+
+export interface GenerateChallengeIdeasPayload {
+  role_title?: string;
+  job_description?: string | null;
+  skill_gap_analysis?: SkillGapAnalysis | null;
+}
+
+export interface GenerateChallengeIdeasResponseData {
+  ideas: ChallengeIdea[];
+}
+
 export interface ProjectChallengePayload {
   title: string;
   problem_statement: string;
@@ -198,6 +217,25 @@ export const api = {
     }
 
     return json.data;
+  },
+
+  async generateChallengeIdeas(
+    payload: GenerateChallengeIdeasPayload
+  ): Promise<GenerateChallengeIdeasResponseData> {
+    const res = await fetchJson<GenerateChallengeIdeasResponseData>(
+      "/v1/generate-challenge-ideas",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.data) {
+      throw new ApiClientError(
+        "Missing response data from challenge ideas endpoint",
+        500
+      );
+    }
+    return res.data;
   },
 
   async generateSpec(payload: GenerateSpecPayload): Promise<GenerateSpecResponseData> {

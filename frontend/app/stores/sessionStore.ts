@@ -293,6 +293,7 @@ const initialState = {
   vivaAnswers: {},
   vivaConsentGiven: false,
   seal: null,
+  dossier: null,
 };
 
 export const useSessionStore = create<EvaluationSessionState>()(

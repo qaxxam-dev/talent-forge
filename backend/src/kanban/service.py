@@ -4,6 +4,9 @@ from pydantic import BaseModel, Field
 from core.config import config
 from core.llm import llm_service
 from src.kanban.schemas import (
+    ChallengeIdea,
+    GenerateChallengeIdeasRequest,
+    GenerateChallengeIdeasResponseData,
     GenerateSpecRequest,
     GenerateSpecResponseData,
     PreVerifiedSource,
@@ -12,6 +15,24 @@ from src.kanban.schemas import (
     VerifyTicketRequest,
     VerifyTicketResponseData,
 )
+
+
+class LLMChallengeIdea(BaseModel):
+    id: str = Field(..., description="Unique slug or identifier (e.g. distributed-ledger)")
+    title: str = Field(..., description="Action-oriented challenge title")
+    tagline: str = Field(..., description="Short 1-sentence summary")
+    problem_statement: str = Field(
+        ...,
+        description="Concrete business problem scenario with the technical requirements/challenge",
+    )
+    tech_stack_focus: str = Field(..., description="Key frameworks and libraries")
+    targeted_skills: List[str] = Field(
+        default_factory=list, description="2-3 targeted competencies or gaps"
+    )
+
+
+class LLMChallengeIdeasResponse(BaseModel):
+    ideas: List[LLMChallengeIdea]
 
 
 class LLMTaskItem(BaseModel):
@@ -333,6 +354,125 @@ Audit the submission:
             ),
             meta,
         )
+
+    @staticmethod
+    def _get_fallback_challenge_ideas(
+        request: GenerateChallengeIdeasRequest,
+    ) -> GenerateChallengeIdeasResponseData:
+        return GenerateChallengeIdeasResponseData(
+            ideas=[
+                ChallengeIdea(
+                    id="fintech-ledger",
+                    title="Idempotent Transactional Ledger & Webhook Engine",
+                    tagline="High-integrity financial balance reconciliation and distributed locking",
+                    problem_statement="Architect a multi-tenant payment reconciliation engine that ingests asynchronous financial webhook events, enforces exactly-once processing via idempotency tokens, and maintains an immutable dual-entry ledger with concurrency-safe row-level locking in PostgreSQL.",
+                    tech_stack_focus="FastAPI, PostgreSQL 16, Redis, Docker, Pytest",
+                    targeted_skills=["Concurrency & Row-Level Locking", "Idempotency Token Flow", "PostgreSQL Schema Precision"],
+                ),
+                ChallengeIdea(
+                    id="event-stream",
+                    title="High-Throughput Distributed Telemetry Ingestion Pipeline",
+                    tagline="Event stream partitioning, buffering, and dead-letter queue recovery",
+                    problem_statement="Build a high-volume event ingestion service capable of processing 10,000 events/sec, buffering through partitioned message queues, detecting out-of-order deliveries, and routing corrupted payloads to a persistent dead-letter queue with exponential backoff.",
+                    tech_stack_focus="FastAPI, Kafka / RabbitMQ, Async Workers, PostgreSQL, Pytest",
+                    targeted_skills=["High-Throughput Buffering", "Dead-Letter Queue Strategy", "Event Stream Partitioning"],
+                ),
+                ChallengeIdea(
+                    id="billing-metering",
+                    title="Multi-Tenant Metered Usage & Subscription Billing Service",
+                    tagline="Usage aggregation under concurrent burst requests with strict SLA",
+                    problem_statement="Design a metered usage billing microservice that aggregates API consumption metrics across enterprise tenants in real-time, avoids write-lock saturation using sliding time-windows, and triggers automated invoice generation with idempotency keys.",
+                    tech_stack_focus="Python 3.12+, FastAPI, Redis Cache-Aside, PostgreSQL MVCC",
+                    targeted_skills=["Distributed Sliding Windows", "Cache-Aside Architecture", "Multi-Tenant Isolation"],
+                ),
+                ChallengeIdea(
+                    id="task-orchestrator",
+                    title="Resilient Distributed Task Orchestrator & Worker Pool",
+                    tagline="Heartbeat monitoring, lease expiration, and graceful worker failover",
+                    problem_statement="Implement a distributed task execution engine that dispatches long-running background jobs across worker pools, tracks liveness via distributed heartbeats, reclaims orphaned jobs upon worker crashes, and exposes structured health metrics.",
+                    tech_stack_focus="Python, Asyncio, Granian, Redis Pub/Sub, Docker Compose",
+                    targeted_skills=["Distributed Worker Heartbeats", "Job Lease Expiration", "Async Execution Engine"],
+                ),
+            ]
+        )
+
+    async def generate_challenge_ideas(
+        self, request: GenerateChallengeIdeasRequest
+    ) -> Tuple[GenerateChallengeIdeasResponseData, dict]:
+        if not config.GEMINI_API_KEY:
+            return self._get_fallback_challenge_ideas(request), {
+                "model": "fallback-generator",
+                "latency_ms": 10,
+            }
+
+        gaps_list = []
+        if request.skill_gap_analysis:
+            gaps_list = [
+                f"- {gap.name} ({gap.severity}): {gap.explanation}"
+                for gap in (request.skill_gap_analysis.critical_gaps + request.skill_gap_analysis.high_gaps)
+            ]
+        gaps_text = (
+            "\n".join(gaps_list)
+            if gaps_list
+            else "General senior systems engineering, concurrency, schema integrity, and scale"
+        )
+
+        system_instruction = (
+            "You are an Elite VP of Engineering and Technical Assessment Architect. "
+            "Your job is to generate exactly 4 distinct, highly realistic, non-trivial engineering challenge ideas "
+            "for a candidate being evaluated for a technical role. "
+            "Each idea MUST be anchored in a concrete real-world business problem scenario with a demanding technical dilemma "
+            "specifically crafted to test the candidate on their identified skill gaps and job description requirements. "
+            "The 4 ideas must span different architectural paradigms (e.g. transaction processing/ledger, real-time telemetry/streaming, "
+            "distributed worker/task orchestration, multi-tenant billing/metering, caching/rate-limiting, or security/auth). "
+            "Return exactly 4 ideas matching the schema."
+        )
+
+        prompt = f"""
+TARGET ROLE: {request.role_title or 'Senior Technical Candidate'}
+
+JOB REQUIREMENTS:
+{request.job_description or 'Senior engineering requirements with distributed systems, databases, and APIs'}
+
+IDENTIFIED CANDIDATE SKILL GAPS TO TARGET:
+{gaps_text}
+
+Generate exactly 4 distinct engineering challenge ideas:
+For each of the 4 ideas, provide:
+1. id: unique lowercase slug (e.g. 'fintech-ledger', 'telemetry-stream', 'billing-meter', 'worker-orchestrator')
+2. title: clear, professional engineering challenge title
+3. tagline: concise 1-sentence hook explaining the technical core
+4. problem_statement: 2-3 sentences describing the concrete enterprise business context, technical bottleneck, and what the candidate must architect/build
+5. tech_stack_focus: realistic tech stack (e.g. FastAPI, PostgreSQL 16, Redis, Kafka, Docker, Pytest)
+6. targeted_skills: list of 2-3 specific skills/gaps this challenge assesses
+"""
+
+        try:
+            parsed_dict, meta = await llm_service.generate_structured(
+                prompt=prompt,
+                system_instruction=system_instruction,
+                response_schema=LLMChallengeIdeasResponse,
+            )
+
+            raw_ideas = parsed_dict.get("ideas", [])
+            ideas: List[ChallengeIdea] = []
+            for item in raw_ideas[:4]:
+                if isinstance(item, dict):
+                    ideas.append(ChallengeIdea(**item))
+                elif hasattr(item, "model_dump"):
+                    ideas.append(ChallengeIdea(**item.model_dump()))
+
+            if not ideas:
+                return self._get_fallback_challenge_ideas(request), meta
+
+            return GenerateChallengeIdeasResponseData(ideas=ideas), meta
+        except Exception as exc:
+            # Fallback gracefully to enterprise presets if LLM call fails
+            return self._get_fallback_challenge_ideas(request), {
+                "model": "fallback-generator",
+                "error": str(exc),
+                "latency_ms": 10,
+            }
 
 
 class LLMTicketAudit(BaseModel):

@@ -173,7 +173,7 @@ export default function RepoAnalysisRoute() {
                 <span
                   className={`size-2 rounded-full shrink-0 ${
                     repoAnalysis.has_sufficient_signal
-                      ? "bg-emerald-500/80 ring-2 ring-emerald-500/20"
+                      ? "bg-primary"
                       : "bg-muted-foreground/30"
                   }`}
                   title={repoAnalysis.has_sufficient_signal ? "High Signal Verified" : "Weak Signal"}
@@ -258,19 +258,11 @@ export default function RepoAnalysisRoute() {
                   </span>
                   <Badge
                     variant={
-                      repoAnalysis.commit_forensics.forensic_risk_score === "LOW"
-                        ? "outline"
-                        : repoAnalysis.commit_forensics.forensic_risk_score === "MEDIUM"
-                        ? "secondary"
-                        : "destructive"
+                      repoAnalysis.commit_forensics.forensic_risk_score === "HIGH"
+                        ? "destructive"
+                        : "outline"
                     }
-                    className={`text-[10px] uppercase font-mono ${
-                      repoAnalysis.commit_forensics.forensic_risk_score === "LOW"
-                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                        : repoAnalysis.commit_forensics.forensic_risk_score === "MEDIUM"
-                        ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                        : ""
-                    }`}
+                    className="text-[10px] uppercase font-mono"
                   >
                     Risk: {repoAnalysis.commit_forensics.forensic_risk_score}
                   </Badge>
@@ -288,7 +280,7 @@ export default function RepoAnalysisRoute() {
                     className={`text-[11px] font-semibold ${
                       repoAnalysis.commit_forensics.is_fork
                         ? "text-destructive"
-                        : "text-emerald-600 dark:text-emerald-400"
+                        : "text-foreground"
                     }`}
                   >
                     {repoAnalysis.commit_forensics.is_fork ? "Forked Repository" : "Original Repository"}
@@ -300,7 +292,7 @@ export default function RepoAnalysisRoute() {
                     className={`text-[11px] font-semibold ${
                       repoAnalysis.commit_forensics.single_giant_initial_commit
                         ? "text-destructive"
-                        : "text-emerald-600 dark:text-emerald-400"
+                        : "text-foreground"
                     }`}
                   >
                     {repoAnalysis.commit_forensics.single_giant_initial_commit
@@ -313,8 +305,8 @@ export default function RepoAnalysisRoute() {
                   <span
                     className={`text-[11px] font-semibold ${
                       repoAnalysis.commit_forensics.timestamps_clustered_minutes
-                        ? "text-amber-600 dark:text-amber-400"
-                        : "text-emerald-600 dark:text-emerald-400"
+                        ? "text-destructive"
+                        : "text-foreground"
                     }`}
                   >
                     {repoAnalysis.commit_forensics.timestamps_clustered_minutes
@@ -327,8 +319,8 @@ export default function RepoAnalysisRoute() {
                   <span
                     className={`text-[11px] font-semibold ${
                       repoAnalysis.commit_forensics.author_mismatch
-                        ? "text-amber-600 dark:text-amber-400"
-                        : "text-emerald-600 dark:text-emerald-400"
+                        ? "text-destructive"
+                        : "text-foreground"
                     }`}
                   >
                     {repoAnalysis.commit_forensics.author_mismatch
@@ -344,7 +336,7 @@ export default function RepoAnalysisRoute() {
           <div className="rounded-xl border border-border/70 bg-muted/20 p-4 space-y-1.5">
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
               <div className="flex items-center gap-2">
-                <IconShieldCheck className="size-4 text-emerald-500" />
+                <IconShieldCheck className="size-4 text-foreground" />
                 <span>Architectural Evidence Assessment</span>
               </div>
               <span className="font-mono text-[11px] font-normal text-muted-foreground">
@@ -380,7 +372,7 @@ export default function RepoAnalysisRoute() {
                       onClick={() => setActiveFileIdx(idx)}
                       className={`rounded-xl border p-3.5 cursor-pointer transition-all ${
                         isActive
-                          ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/30"
+                          ? "border-primary bg-primary/5 shadow-xs ring-1 ring-primary/30"
                           : "border-border/70 bg-card hover:bg-muted/40"
                       }`}
                     >
@@ -450,7 +442,7 @@ export default function RepoAnalysisRoute() {
                           }
                         }}
                       >
-                        {copied ? <IconCheck className="size-3.5 text-emerald-500" /> : <IconCopy className="size-3.5" />}
+                        {copied ? <IconCheck className="size-3.5 text-foreground" /> : <IconCopy className="size-3.5" />}
                         <span className="text-[11px]">{copied ? "Copied" : "Copy"}</span>
                       </Button>
 
@@ -462,7 +454,7 @@ export default function RepoAnalysisRoute() {
                       >
                         {selectedArtifacts.includes(activeFile.path) ? (
                           <span className="flex items-center gap-1 text-[11px]">
-                            <IconCheck className="size-3 text-emerald-500" />
+                            <IconCheck className="size-3 text-primary" />
                             Included in Viva
                           </span>
                         ) : (

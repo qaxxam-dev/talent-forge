@@ -410,6 +410,7 @@ export default function VivaRoute() {
       }
 
       try {
+        const baseTranscript = liveTranscript.trim();
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
@@ -420,21 +421,25 @@ export default function VivaRoute() {
         };
 
         recognition.onresult = (event: any) => {
-          let interimTranscript = "";
           let finalTranscript = "";
+          let interimTranscript = "";
 
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
+          for (let i = 0; i < event.results.length; ++i) {
+            const item = event.results[i];
+            const text = item[0]?.transcript || "";
+            if (item.isFinal) {
+              finalTranscript += text + " ";
             } else {
-              interimTranscript += event.results[i][0].transcript;
+              interimTranscript += text;
             }
           }
 
-          setLiveTranscript((prev) => {
-            const combined = (prev + " " + finalTranscript).trim();
-            return interimTranscript ? `${combined} ${interimTranscript}` : combined;
-          });
+          const currentSessionText = (finalTranscript + interimTranscript).trim();
+          const fullText = baseTranscript
+            ? `${baseTranscript} ${currentSessionText}`.trim()
+            : currentSessionText;
+
+          setLiveTranscript(fullText);
         };
 
         recognition.onerror = (event: any) => {
@@ -685,15 +690,21 @@ export default function VivaRoute() {
 
       {/* Knowledge Reuse: Delta Viva Banner */}
       {preVerifiedCount > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-2.5 text-xs text-foreground">
-          <div className="flex items-center gap-2">
-            <span className="flex size-2 rounded-full bg-blue-500 shrink-0 animate-pulse" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border bg-card p-3.5 text-xs text-foreground shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="flex size-2 rounded-full bg-primary shrink-0 animate-pulse" />
             <span>
-              <strong className="text-blue-600 dark:text-blue-400">Delta Viva Active: </strong>
-              {preVerifiedCount} technical tickets pre-verified under <code className="font-mono">{priorVerificationId || "TF-VERIFY-20261012-8821"}</code>. Only newly tested deliverables are subject to oral defense; past defense scores carry forward.
+              <strong className="text-foreground font-semibold">Delta Viva Active: </strong>
+              <span className="text-muted-foreground">
+                {preVerifiedCount} technical tickets pre-verified under{" "}
+                <code className="font-mono px-1 py-0.5 rounded bg-muted text-foreground text-[11px]">
+                  {priorVerificationId || "TF-VERIFY-20261012-8821"}
+                </code>
+                . Only newly tested deliverables are subject to oral defense; past defense scores carry forward.
+              </span>
             </span>
           </div>
-          <Badge variant="outline" className="border-blue-500/40 text-blue-600 dark:text-blue-400 font-mono text-[10px] shrink-0 self-start sm:self-auto">
+          <Badge variant="secondary" className="font-mono text-[11px] shrink-0 self-start sm:self-auto border border-border">
             Prior Provenance Linked
           </Badge>
         </div>
@@ -746,9 +757,9 @@ export default function VivaRoute() {
 
       {/* Voice Privacy Consent Banner */}
       {!vivaConsentGiven && (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="rounded-lg border border-border bg-card p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start gap-3">
-            <IconShieldCheck className="size-5 text-primary shrink-0 mt-0.5" />
+            <IconShieldCheck className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-semibold text-foreground">
                 Audio Processing & Candidate Privacy Disclosure (DPDP Section 8)
@@ -838,7 +849,7 @@ export default function VivaRoute() {
                 className="text-xs font-semibold shrink-0 gap-1.5 h-8 border-border/70 hover:bg-muted/60 shadow-xs"
                 onClick={handleBatchApproveAsync}
               >
-                <IconCheck className="size-3.5 text-emerald-500" />
+                <IconCheck className="size-3.5" />
                 Batch Approve AI Marks
               </Button>
             </div>
@@ -879,10 +890,8 @@ export default function VivaRoute() {
                         <div className="flex items-start gap-2.5 min-w-0">
                           <span
                             className={`size-2 mt-1 rounded-full shrink-0 ${
-                              isAdequate
-                                ? "bg-emerald-500/80 ring-2 ring-emerald-500/20"
-                                : isWeak
-                                ? "bg-amber-500/80 ring-2 ring-amber-500/20"
+                              isMarked
+                                ? "bg-primary"
                                 : "bg-muted-foreground/30"
                             }`}
                             title={isMarked ? `Marked: ${record.recruiter_mark}` : "Awaiting Review"}
@@ -997,13 +1006,9 @@ export default function VivaRoute() {
                               size="sm"
                               variant={isSelected ? "default" : "outline"}
                               className={`h-7 text-xs capitalize ${
-                                isSelected && grade === "adequate"
-                                  ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent"
-                                  : isSelected && grade === "weak"
-                                  ? "bg-amber-600 hover:bg-amber-700 text-white border-transparent"
-                                  : isSelected && grade === "none"
-                                  ? "bg-muted text-foreground border-border"
-                                  : "border-border/70 text-muted-foreground hover:text-foreground"
+                                !isSelected
+                                  ? "border-border text-muted-foreground hover:text-foreground"
+                                  : ""
                               }`}
                               onClick={() => handleGradeAsync(activeTurn, grade)}
                             >
@@ -1022,8 +1027,8 @@ export default function VivaRoute() {
           {/* Proceed Progression Banner */}
           <div className="rounded-xl border border-border/70 bg-card p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="size-8 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <IconCheck className="size-4 text-emerald-500" />
+              <div className="size-8 rounded-full bg-muted border border-border flex items-center justify-center shrink-0">
+                <IconCheck className="size-4 text-foreground" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground">
@@ -1259,14 +1264,8 @@ export default function VivaRoute() {
                         Depth Score:
                       </span>
                       <Badge
-                        variant="outline"
-                        className={`font-bold ${
-                          activeAnswer.score >= 4
-                            ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
-                            : activeAnswer.score === 3
-                            ? "text-amber-400 border-amber-500/40 bg-amber-500/10"
-                            : "text-red-400 border-red-500/40 bg-red-500/10"
-                        }`}
+                        variant="secondary"
+                        className="font-bold"
                       >
                         {activeAnswer.score} / 5
                       </Badge>
@@ -1285,12 +1284,8 @@ export default function VivaRoute() {
                           variant={recruiterMark === mark ? "default" : "outline"}
                           onClick={() => handleUpdateMark(mark)}
                           className={`h-7 px-2.5 text-[11px] capitalize ${
-                            recruiterMark === mark
-                              ? mark === "adequate"
-                                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                : mark === "weak"
-                                ? "bg-amber-600 hover:bg-amber-700 text-white"
-                                : "bg-red-600 hover:bg-red-700 text-white"
+                            recruiterMark !== mark
+                              ? "border-border text-muted-foreground hover:text-foreground"
                               : ""
                           }`}
                         >
@@ -1323,7 +1318,7 @@ export default function VivaRoute() {
                       </Button>
                     ) : (
                       <Link to="/seal">
-                        <Button size="sm" className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <Button size="sm" className="gap-1.5 text-xs">
                           Proceed to Verification Record
                           <IconArrowRight className="size-3.5" />
                         </Button>
@@ -1366,8 +1361,8 @@ export default function VivaRoute() {
                       className={`rounded-md border p-3 text-xs space-y-1.5 transition-all ${
                         isEvaluated
                           ? isHit
-                            ? "border-emerald-500/40 bg-emerald-500/5 text-foreground"
-                            : "border-red-500/40 bg-red-500/5 text-muted-foreground"
+                            ? "border-border bg-muted/30 text-foreground"
+                            : "border-border bg-card text-muted-foreground"
                           : "border-border bg-card text-foreground"
                       }`}
                     >
@@ -1377,12 +1372,8 @@ export default function VivaRoute() {
                         </span>
                         {isEvaluated && (
                           <Badge
-                            variant="outline"
-                            className={`text-[9px] shrink-0 ${
-                              isHit
-                                ? "border-emerald-500 text-emerald-400"
-                                : "border-red-500 text-red-400"
-                            }`}
+                            variant={isHit ? "secondary" : "outline"}
+                            className="text-[9px] shrink-0"
                           >
                             {isHit ? "HIT" : "MISSED"}
                           </Badge>

@@ -18,6 +18,39 @@ class ProjectChallenge(BaseModel):
     )
 
 
+class ChallengeIdea(BaseModel):
+    id: str = Field(..., description="Unique slug or identifier (e.g. fintech-ledger)")
+    title: str = Field(..., description="Action-oriented title of the challenge")
+    tagline: str = Field(..., description="Short 1-sentence hook or overview")
+    problem_statement: str = Field(
+        ...,
+        description="Detailed business problem scenario explaining what the candidate must build and the core technical dilemma",
+    )
+    tech_stack_focus: str = Field(
+        ...,
+        description="Suggested tech stack and libraries (e.g. FastAPI, PostgreSQL, Redis)",
+    )
+    targeted_skills: List[str] = Field(
+        default_factory=list, description="Targeted competencies or skill gaps addressed"
+    )
+
+
+class GenerateChallengeIdeasRequest(BaseModel):
+    role_title: Optional[str] = Field(
+        default="Senior Technical Candidate", description="Target role title"
+    )
+    job_description: Optional[str] = Field(
+        default=None, description="Job requirements or role competency framework"
+    )
+    skill_gap_analysis: Optional[SkillGapAnalysis] = Field(
+        default=None, description="Skill gap analysis produced during Screen 1 intake"
+    )
+
+
+class GenerateChallengeIdeasResponseData(BaseModel):
+    ideas: List[ChallengeIdea]
+
+
 class PreVerifiedSource(BaseModel):
     verification_id: Optional[str] = None
     verified_at: Optional[str] = None

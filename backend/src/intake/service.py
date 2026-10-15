@@ -452,6 +452,11 @@ class IntakeService:
         try:
             if ext == "pdf":
                 reader = pypdf.PdfReader(io.BytesIO(content))
+                if getattr(reader, "is_encrypted", False):
+                    try:
+                        reader.decrypt("")
+                    except Exception:
+                        pass
                 pages = []
                 for p in reader.pages:
                     txt = p.extract_text()

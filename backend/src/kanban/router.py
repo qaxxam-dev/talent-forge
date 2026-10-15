@@ -4,6 +4,8 @@ from core.config import config
 from core.rate_limiter import limiter
 from core.schemas import APIResponse
 from src.kanban.schemas import (
+    GenerateChallengeIdeasRequest,
+    GenerateChallengeIdeasResponseData,
     GenerateSpecRequest,
     GenerateSpecResponseData,
     VerifyTicketRequest,
@@ -12,6 +14,24 @@ from src.kanban.schemas import (
 from src.kanban.service import kanban_service
 
 router = APIRouter(prefix="/v1", tags=["Kanban"])
+
+
+@router.post(
+    "/generate-challenge-ideas",
+    response_model=APIResponse[GenerateChallengeIdeasResponseData],
+)
+@limiter.limit(config.RATE_LIMIT_LLM)
+async def generate_challenge_ideas_endpoint(
+    request: Request,
+    body: GenerateChallengeIdeasRequest,
+) -> APIResponse[GenerateChallengeIdeasResponseData]:
+    data, meta = await kanban_service.generate_challenge_ideas(body)
+    return APIResponse(
+        success=True,
+        data=data,
+        error=None,
+        meta=meta,
+    )
 
 
 @router.post("/generate-spec", response_model=APIResponse[GenerateSpecResponseData])

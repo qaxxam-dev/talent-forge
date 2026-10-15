@@ -255,7 +255,7 @@ export default function DossierRoute() {
                   {/* Status Indicator Dot: single 6px dot with ring */}
                   <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-border/70 bg-muted/30 text-[11px] font-medium text-foreground print:border-neutral-300 print:bg-neutral-50">
                     <span className="relative flex h-2 w-2">
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500/80"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                     </span>
                     <span>Verified Day-Zero</span>
                   </div>
@@ -307,14 +307,14 @@ export default function DossierRoute() {
 
           {/* Cumulative Verification Lineage Box */}
           {preVerifiedTasks.length > 0 && (
-            <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 space-y-3 shadow-xs print:border-neutral-300 print:bg-neutral-50 print:break-inside-avoid">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-blue-500/20 pb-2.5">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs print:border-neutral-300 print:bg-neutral-50 print:break-inside-avoid">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border pb-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="flex size-2 rounded-full bg-blue-500" />
+                  <span className="flex size-2 rounded-full bg-primary" />
                   <h3 className="text-xs font-semibold text-foreground">
                     Cumulative Verification Lineage
                   </h3>
-                  <Badge variant="outline" className="border-blue-500/40 text-blue-600 dark:text-blue-400 text-[10px] font-mono">
+                  <Badge variant="secondary" className="border-border text-[10px] font-mono">
                     Prior Provenance Intact
                   </Badge>
                 </div>
@@ -324,15 +324,15 @@ export default function DossierRoute() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                <div className="space-y-1.5 rounded-lg border border-border/50 bg-background/50 p-2.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                <div className="space-y-1.5 rounded-lg border border-border bg-muted/30 p-2.5">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-foreground flex items-center gap-1">
                     <IconCheck className="size-3" />
                     Pre-Verified Competencies ({preVerifiedTasks.length})
                   </div>
                   <ul className="space-y-1 text-[11px] text-muted-foreground">
                     {preVerifiedTasks.map((t) => (
                       <li key={t.id} className="flex items-center gap-1.5 truncate">
-                        <span className="font-mono text-[10px] text-blue-600 dark:text-blue-400">{t.id}</span>
+                        <span className="font-mono text-[10px] text-muted-foreground">{t.id}</span>
                         <span className="truncate">{t.title}</span>
                       </li>
                     ))}
@@ -340,7 +340,7 @@ export default function DossierRoute() {
                 </div>
 
                 <div className="space-y-1.5 rounded-lg border border-border/50 bg-background/50 p-2.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-foreground flex items-center gap-1">
                     <IconCheck className="size-3" />
                     Freshly Tested Deliverables ({freshlyVerifiedTasks.length})
                   </div>
@@ -348,7 +348,7 @@ export default function DossierRoute() {
                     {freshlyVerifiedTasks.length > 0 ? (
                       freshlyVerifiedTasks.map((t) => (
                         <li key={t.id} className="flex items-center gap-1.5 truncate">
-                          <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">{t.id}</span>
+                          <span className="font-mono text-[10px] text-muted-foreground">{t.id}</span>
                           <span className="truncate">{t.title}</span>
                         </li>
                       ))

@@ -36,7 +36,7 @@ class LLMService:
         start_time = time.time()
         primary_model = model or config.GEMINI_MODEL
         models_to_try = [primary_model]
-        for fallback_candidate in ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"]:
+        for fallback_candidate in ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-lite"]:
             if fallback_candidate not in models_to_try:
                 models_to_try.append(fallback_candidate)
 
@@ -60,7 +60,7 @@ class LLMService:
                 latency_ms = int((time.time() - start_time) * 1000)
 
                 if not response.text:
-                    raise CustomException("Gemini returned empty response")
+                    raise CustomException(f"Gemini model {current_model} returned empty response")
 
                 parsed = json.loads(response.text)
                 meta = {
@@ -70,19 +70,17 @@ class LLMService:
                 return parsed, meta
             except asyncio.TimeoutError:
                 last_exception = CustomException(f"Gemini API call timed out after 35s on {current_model}")
+                continue
             except json.JSONDecodeError as e:
-                last_exception = CustomException(f"Invalid JSON returned from model: {str(e)}")
-                break
+                last_exception = CustomException(f"Invalid JSON returned from model {current_model}: {str(e)}")
+                continue
             except Exception as e:
-                if isinstance(e, CustomException):
-                    last_exception = e
-                else:
-                    err_msg = str(e)
-                    last_exception = CustomException(f"Gemini API error ({current_model}): {err_msg}")
-                    # If quota exhausted (429) or high demand (503), retry next model in pool
-                    if any(indicator in err_msg for indicator in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE")):
-                        continue
-                raise last_exception
+                err_msg = str(e)
+                last_exception = CustomException(f"Gemini API error ({current_model}): {err_msg}")
+                # If auth error (e.g. invalid API key), fail fast instead of cycling models
+                if "API_KEY_INVALID" in err_msg or "PERMISSION_DENIED" in err_msg or "401" in err_msg:
+                    raise last_exception
+                continue
 
         if last_exception:
             raise last_exception

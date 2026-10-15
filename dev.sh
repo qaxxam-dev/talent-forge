@@ -21,11 +21,12 @@ echo "=================================================="
 echo "⚡ Starting TalentForge MVP Development Servers"
 echo "=================================================="
 
-# Ensure port 8000 and 5173 are free
-fuser -k 8000/tcp 2>/dev/null || true
+# Ensure port 8001 and 5173 are free
+fuser -k 8001/tcp 2>/dev/null || true
+fuser -k 5173/tcp 2>/dev/null || true
 
 # 1. Start FastAPI Backend
-echo "🚀 [1/2] Launching Backend on http://127.0.0.1:8000..."
+echo "🚀 [1/2] Launching Backend on http://127.0.0.1:8001..."
 (cd "$BACKEND_DIR" && uv run python main.py) &
 BACKEND_PID=$!
 
@@ -40,7 +41,7 @@ FRONTEND_PID=$!
 echo ""
 echo "✅ Both servers running!"
 echo "   • Frontend: http://localhost:5173"
-echo "   • Backend:  http://localhost:8000 (API Docs: http://localhost:8000/docs)"
+echo "   • Backend:  http://localhost:8001 (API Docs: http://localhost:8001/docs)"
 echo ""
 echo "Press Ctrl+C to stop both servers."
 
