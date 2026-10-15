@@ -26,9 +26,9 @@ if [ ! -d "$FRONTEND_DIR/build" ]; then
   (cd "$FRONTEND_DIR" && npm run build)
 fi
 
-# 2. Launch FastAPI Backend on port 8000
-echo "⚡ Starting Backend on http://127.0.0.1:8000..."
-(cd "$BACKEND_DIR" && ENVIRONMENT=production uv run python main.py) &
+# 2. Launch FastAPI Backend on port 8001
+echo "⚡ Starting Backend on http://127.0.0.1:8001..."
+(cd "$BACKEND_DIR" && BACKEND_PORT=8001 ENVIRONMENT=production uv run python main.py) &
 BACKEND_PID=$!
 
 sleep 1.5
@@ -41,10 +41,10 @@ FRONTEND_PID=$!
 echo ""
 echo "✅ Both services running in production mode!"
 echo "   • Frontend: http://127.0.0.1:3000"
-echo "   • Backend:  http://127.0.0.1:8000"
+echo "   • Backend:  http://127.0.0.1:8001"
 echo ""
 echo "Reverse proxy (Nginx/Caddy) should point:"
-echo "   • /v1/*  -> http://127.0.0.1:8000"
+echo "   • /v1/*  -> http://127.0.0.1:8001"
 echo "   • /*     -> http://127.0.0.1:3000"
 echo ""
 
