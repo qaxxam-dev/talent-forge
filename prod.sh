@@ -20,6 +20,10 @@ echo "=================================================="
 echo "🚀 Starting TalentForge Production Servers"
 echo "=================================================="
 
+# Ensure ports 8001 and 3000 are free from zombie processes
+fuser -k 8001/tcp 2>/dev/null || true
+fuser -k 3000/tcp 2>/dev/null || true
+
 # 1. Build frontend if not built yet
 if [ ! -d "$FRONTEND_DIR/build" ]; then
   echo "📦 Building frontend production bundle..."
