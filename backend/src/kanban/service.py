@@ -9,6 +9,8 @@ from src.kanban.schemas import (
     PreVerifiedSource,
     ProjectChallenge,
     TaskItem,
+    VerifyTicketRequest,
+    VerifyTicketResponseData,
 )
 
 
@@ -281,6 +283,64 @@ Generate a comprehensive 3-sprint Kanban specification:
         )
 
         return response_data, meta
+
+    async def verify_ticket(
+        self, request: VerifyTicketRequest
+    ) -> tuple[VerifyTicketResponseData, dict]:
+        system_instruction = (
+            "You are a rigorous engineering tech lead and code reviewer. Analyze the submitted candidate source code "
+            "against the task's acceptance criteria. Verify whether the code meets clean architecture standards, "
+            "satisfies each acceptance criterion, and exhibits genuine production implementation rather than superficial mocks.\n"
+            "Return only valid JSON matching the schema."
+        )
+
+        prompt = f"""
+TASK TITLE: {request.task_title}
+TARGET FILE PATH: {request.suggested_path}
+ACCEPTANCE CRITERIA:
+{request.acceptance_criteria}
+
+CANDIDATE SUBMITTED CODE:
+```
+{request.code_content}
+```
+
+Audit the submission:
+1. is_verified: True if the code satisfies the core criteria and represents legitimate engineering work (score >= 70).
+2. verification_score: Numerical score 0 to 100 based on completeness and criteria coverage.
+3. rubric_feedback: 2-3 sentences explaining how acceptance criteria are fulfilled or what is missing.
+4. strengths: 2-3 positive architectural patterns seen in the code.
+5. shortcomings: Any edge cases, missing error boundaries, or potential bugs.
+"""
+        audit_dict, meta = await llm_service.generate_structured(
+            prompt=prompt,
+            system_instruction=system_instruction,
+            response_schema=LLMTicketAudit,
+        )
+        audit = LLMTicketAudit(**audit_dict)
+
+        snippet = "\n".join(request.code_content.strip().splitlines()[:25])
+        return (
+            VerifyTicketResponseData(
+                task_id=request.task_id,
+                is_verified=audit.is_verified,
+                status="verified" if audit.is_verified else "rejected",
+                verification_score=audit.verification_score,
+                rubric_feedback=audit.rubric_feedback,
+                strengths=audit.strengths,
+                shortcomings=audit.shortcomings,
+                verified_code_snippet=snippet,
+            ),
+            meta,
+        )
+
+
+class LLMTicketAudit(BaseModel):
+    is_verified: bool = Field(..., description="True if code fulfills criteria")
+    verification_score: int = Field(ge=0, le=100)
+    rubric_feedback: str = Field(..., description="Forensic audit feedback")
+    strengths: List[str] = Field(default_factory=list)
+    shortcomings: List[str] = Field(default_factory=list)
 
 
 kanban_service = KanbanService()

@@ -16,15 +16,20 @@ import { useSessionStore, type TaskItem } from "@/stores/sessionStore";
 interface TicketCardProps {
   task: TaskItem;
   onEdit: (task: TaskItem) => void;
+  onVerify?: (task: TaskItem) => void;
 }
 
-export function TicketCard({ task, onEdit }: TicketCardProps) {
+export function TicketCard({ task, onEdit, onVerify }: TicketCardProps) {
   const { updateTaskStatus } = useSessionStore();
 
   const handleCycleStatus = () => {
     if (task.status === "open") {
       updateTaskStatus(task.id, "assigned");
     } else if (task.status === "assigned") {
+      if (onVerify) {
+        onVerify(task);
+        return;
+      }
       updateTaskStatus(task.id, "verified");
     } else if (task.status === "pre_verified") {
       updateTaskStatus(task.id, "open", "Reset for fresh verification by recruiter");
@@ -196,6 +201,21 @@ export function TicketCard({ task, onEdit }: TicketCardProps) {
           </div>
         )}
 
+
+        {/* AI Code Verification Result if verified */}
+        {task.verification_score !== undefined && (
+          <div className="flex items-center justify-between rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-[11px] text-emerald-600 dark:text-emerald-400">
+            <span className="font-semibold flex items-center gap-1">
+              <IconShieldCheck className="size-3.5 stroke-[2.5]" />
+              Audited: {task.verification_score}%
+            </span>
+            {task.rubric_feedback && (
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-300 truncate max-w-[150px]" title={task.rubric_feedback}>
+                {task.rubric_feedback}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Bottom Action Footer */}
         <div className="flex items-center justify-between pt-1 border-t border-border/40">

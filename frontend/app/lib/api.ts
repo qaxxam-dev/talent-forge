@@ -266,6 +266,33 @@ export const api = {
     return res.data;
   },
 
+  async verifyTicket(payload: {
+    task_id: string;
+    task_title: string;
+    acceptance_criteria: string;
+    suggested_path: string;
+    code_content: string;
+    pr_url?: string;
+  }): Promise<{
+    task_id: string;
+    is_verified: boolean;
+    status: "verified" | "rejected";
+    verification_score: number;
+    rubric_feedback: string;
+    strengths: string[];
+    shortcomings: string[];
+    verified_code_snippet: string;
+  }> {
+    const res = await fetchJson<any>("/v1/verify-ticket", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (!res.data) {
+      throw new ApiClientError("Missing response data from verify-ticket endpoint", 500);
+    }
+    return res.data;
+  },
+
   async createSeal(payload: {
     candidate_id: string;
     candidate_name: string;

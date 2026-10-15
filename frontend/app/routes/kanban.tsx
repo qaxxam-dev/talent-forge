@@ -19,6 +19,7 @@ import { NewTicketModal } from "@/components/kanban/NewTicketModal";
 import { ProjectChallengeModal } from "@/components/kanban/ProjectChallengeModal";
 import { TicketCard } from "@/components/kanban/TicketCard";
 import { TicketEditModal } from "@/components/kanban/TicketEditModal";
+import { VerifyTicketModal } from "@/components/kanban/VerifyTicketModal";
 import { DEMO_PRESET_BACKEND } from "@/lib/presets";
 import { useSessionStore, type TaskItem } from "@/stores/sessionStore";
 
@@ -52,6 +53,7 @@ export default function KanbanRoute() {
   const [candidateKitOpen, setCandidateKitOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<TaskItem | null>(null);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [verifyingTask, setVerifyingTask] = React.useState<TaskItem | null>(null);
   const [newTicketSprint, setNewTicketSprint] = React.useState<1 | 2 | 3 | null>(null);
 
   // Auto-open challenge modal on first visit if no tasks yet and intake exists
@@ -325,6 +327,7 @@ export default function KanbanRoute() {
           subtitle="Data persistence, tables & validation"
           tasks={sprint1Tasks}
           onEditTask={handleEditTicket}
+          onVerifyTask={setVerifyingTask}
           onAddTicket={() => setNewTicketSprint(1)}
         />
 
@@ -335,6 +338,7 @@ export default function KanbanRoute() {
           subtitle="Endpoints, business logic & rate limits"
           tasks={sprint2Tasks}
           onEditTask={handleEditTicket}
+          onVerifyTask={setVerifyingTask}
           onAddTicket={() => setNewTicketSprint(2)}
         />
 
@@ -345,6 +349,7 @@ export default function KanbanRoute() {
           subtitle="Concurrency tests, Docker & CI/CD"
           tasks={sprint3Tasks}
           onEditTask={handleEditTicket}
+          onVerifyTask={setVerifyingTask}
           onAddTicket={() => setNewTicketSprint(3)}
         />
       </div>
@@ -366,6 +371,12 @@ export default function KanbanRoute() {
         onOpenChange={setEditModalOpen}
       />
 
+      <VerifyTicketModal
+        task={verifyingTask}
+        open={!!verifyingTask}
+        onOpenChange={(open) => !open && setVerifyingTask(null)}
+      />
+
       {newTicketSprint && (
         <NewTicketModal
           sprint={newTicketSprint}
@@ -383,6 +394,7 @@ function SprintColumn({
   subtitle,
   tasks,
   onEditTask,
+  onVerifyTask,
   onAddTicket,
 }: {
   sprintNumber: 1 | 2 | 3;
@@ -390,6 +402,7 @@ function SprintColumn({
   subtitle: string;
   tasks: TaskItem[];
   onEditTask: (task: TaskItem) => void;
+  onVerifyTask: (task: TaskItem) => void;
   onAddTicket: () => void;
 }) {
   const verifiedCount = tasks.filter((t) => t.status === "verified").length;
@@ -412,7 +425,12 @@ function SprintColumn({
       {/* Cards Stack */}
       <div className="space-y-3 flex-1">
         {tasks.map((task) => (
-          <TicketCard key={task.id} task={task} onEdit={onEditTask} />
+          <TicketCard
+            key={task.id}
+            task={task}
+            onEdit={onEditTask}
+            onVerify={onVerifyTask}
+          />
         ))}
 
         {tasks.length === 0 && (

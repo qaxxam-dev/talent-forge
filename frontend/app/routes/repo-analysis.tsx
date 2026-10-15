@@ -242,6 +242,104 @@ export default function RepoAnalysisRoute() {
             </div>
           </div>
 
+          {/* Commit Forensics & Authenticity Audit Card */}
+          {repoAnalysis.commit_forensics && (
+            <div className="rounded-xl border border-border/80 bg-card p-4 space-y-3 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/50 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <IconGitBranch className="size-4 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">
+                    Commit Timeline Forensics & Authorship Audit
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    {repoAnalysis.commit_forensics.total_commits} commits analyzed
+                  </span>
+                  <Badge
+                    variant={
+                      repoAnalysis.commit_forensics.forensic_risk_score === "LOW"
+                        ? "outline"
+                        : repoAnalysis.commit_forensics.forensic_risk_score === "MEDIUM"
+                        ? "secondary"
+                        : "destructive"
+                    }
+                    className={`text-[10px] uppercase font-mono ${
+                      repoAnalysis.commit_forensics.forensic_risk_score === "LOW"
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : repoAnalysis.commit_forensics.forensic_risk_score === "MEDIUM"
+                        ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        : ""
+                    }`}
+                  >
+                    Risk: {repoAnalysis.commit_forensics.forensic_risk_score}
+                  </Badge>
+                </div>
+              </div>
+
+              <p className="text-xs text-foreground/90 leading-relaxed font-medium">
+                {repoAnalysis.commit_forensics.forensic_summary}
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-xs">
+                  <span className="text-[10px] text-muted-foreground uppercase block font-medium">Fork Status</span>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      repoAnalysis.commit_forensics.is_fork
+                        ? "text-destructive"
+                        : "text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {repoAnalysis.commit_forensics.is_fork ? "Forked Repository" : "Original Repository"}
+                  </span>
+                </div>
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-xs">
+                  <span className="text-[10px] text-muted-foreground uppercase block font-medium">Commit Dump</span>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      repoAnalysis.commit_forensics.single_giant_initial_commit
+                        ? "text-destructive"
+                        : "text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {repoAnalysis.commit_forensics.single_giant_initial_commit
+                      ? "1-Commit Dump Alert"
+                      : "Iterative History"}
+                  </span>
+                </div>
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-xs">
+                  <span className="text-[10px] text-muted-foreground uppercase block font-medium">Timestamp Cluster</span>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      repoAnalysis.commit_forensics.timestamps_clustered_minutes
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {repoAnalysis.commit_forensics.timestamps_clustered_minutes
+                      ? "Suspiciously Clustered"
+                      : "Natural Spread"}
+                  </span>
+                </div>
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-xs">
+                  <span className="text-[10px] text-muted-foreground uppercase block font-medium">Committer Match</span>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      repoAnalysis.commit_forensics.author_mismatch
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {repoAnalysis.commit_forensics.author_mismatch
+                      ? "Author Mismatch"
+                      : "Profile Matches Git"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* AI Evidence Assessment Banner */}
           <div className="rounded-xl border border-border/70 bg-muted/20 p-4 space-y-1.5">
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
@@ -250,11 +348,11 @@ export default function RepoAnalysisRoute() {
                 <span>Architectural Evidence Assessment</span>
               </div>
               <span className="font-mono text-[11px] font-normal text-muted-foreground">
-                Last analyzed: Today
+                Confidence: {repoAnalysis.confidence_score}%
               </span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              High-signal codebase — async consumers, Redis pooling, and containerized FastAPI pipelines match role requirements.
+              {repoAnalysis.reasoning || repoAnalysis.evidence_summary}
             </p>
           </div>
 

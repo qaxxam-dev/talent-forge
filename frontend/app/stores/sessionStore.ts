@@ -32,6 +32,9 @@ export interface TaskItem {
   suggested_path: string;
   status: "open" | "assigned" | "verified" | "pre_verified";
   notes?: string;
+  verified_code_snippet?: string;
+  verification_score?: number;
+  rubric_feedback?: string;
   pre_verified_source?: {
     verification_id: string;
     verified_at?: string;
@@ -131,6 +134,16 @@ export interface RepoFileHighlight {
   code_snippet?: string;
 }
 
+export interface CommitForensics {
+  total_commits: number;
+  single_giant_initial_commit: boolean;
+  timestamps_clustered_minutes: boolean;
+  is_fork: boolean;
+  author_mismatch: boolean;
+  forensic_risk_score: "LOW" | "MEDIUM" | "HIGH";
+  forensic_summary: string;
+}
+
 export interface RepoAnalysisData {
   repo_name: string;
   owner: string;
@@ -143,6 +156,7 @@ export interface RepoAnalysisData {
   key_files: RepoFileHighlight[];
   evidence_summary: string;
   github_url: string;
+  commit_forensics?: CommitForensics;
 }
 
 export interface BatchCandidate {

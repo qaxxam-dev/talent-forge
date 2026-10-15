@@ -93,3 +93,23 @@ class GenerateSpecResponseData(BaseModel):
         ...,
         description="Synthesized summary of technical deliverables used to seed Oral Viva questions",
     )
+
+
+class VerifyTicketRequest(BaseModel):
+    task_id: str = Field(..., description="ID of the task being verified")
+    task_title: str = Field(..., description="Title of the task")
+    acceptance_criteria: str = Field(..., description="Acceptance criteria of the task")
+    suggested_path: str = Field(..., description="Target file path of the task")
+    code_content: str = Field(..., description="Candidate submitted source code or PR diff")
+    pr_url: Optional[str] = Field(default=None, description="Optional PR or commit URL")
+
+
+class VerifyTicketResponseData(BaseModel):
+    task_id: str
+    is_verified: bool
+    status: Literal["verified", "rejected"]
+    verification_score: int = Field(ge=0, le=100, description="Confidence score 0-100")
+    rubric_feedback: str = Field(..., description="Forensic audit feedback against acceptance criteria")
+    strengths: List[str] = Field(default_factory=list)
+    shortcomings: List[str] = Field(default_factory=list)
+    verified_code_snippet: str = Field(..., description="Locked code snippet for viva defense")
