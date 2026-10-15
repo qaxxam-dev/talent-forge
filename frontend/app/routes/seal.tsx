@@ -25,6 +25,7 @@ export default function SealRoute() {
   const {
     activeCandidateId,
     candidateName,
+    skillGapAnalysis,
     tasks,
     repoAnalysis,
     vivaAnswers,
@@ -35,6 +36,8 @@ export default function SealRoute() {
 
   const [isMinting, setIsMinting] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+  const [isVerifyingLookup, setIsVerifyingLookup] = React.useState(false);
+  const [lookupResult, setLookupResult] = React.useState<any | null>(null);
 
   // Extract verified tasks and viva marks
   const verifiedTasks = React.useMemo(() => {
@@ -73,6 +76,7 @@ export default function SealRoute() {
             verified_tasks: verifiedTasks,
             viva_marks: vivaMarks,
             github_url: githubUrl || undefined,
+            verified_skills: skillGapAnalysis?.acquired_skills,
           });
           setSeal(res);
         } catch (err) {
@@ -83,7 +87,7 @@ export default function SealRoute() {
       }
     }
     void initSeal();
-  }, [seal, activeId, activeName, activeRole, verifiedTasks, vivaMarks, githubUrl, setSeal]);
+  }, [seal, activeId, activeName, activeRole, verifiedTasks, vivaMarks, githubUrl, skillGapAnalysis, setSeal]);
 
   const handleCopyId = () => {
     if (seal?.verification_id) {
@@ -91,6 +95,24 @@ export default function SealRoute() {
       setCopied(true);
       toast.success("Copied Verification ID to clipboard");
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleVerifyLookup = async () => {
+    const idToLookup = seal?.verification_id || "TF-SEAL-20261014-07C9F054";
+    setIsVerifyingLookup(true);
+    try {
+      const res = await api.verifyLookup(idToLookup);
+      setLookupResult(res);
+      toast.success("Cryptographic Record Confirmed in Registry!", {
+        description: `Verified candidate: ${res.candidate_name} · Status: ${res.status}`,
+      });
+    } catch (err: any) {
+      toast.error("Lookup failed", {
+        description: err.message || "Could not verify ID in registry.",
+      });
+    } finally {
+      setIsVerifyingLookup(false);
     }
   };
 
@@ -104,6 +126,7 @@ export default function SealRoute() {
         verified_tasks: verifiedTasks,
         viva_marks: vivaMarks,
         github_url: githubUrl || undefined,
+        verified_skills: skillGapAnalysis?.acquired_skills,
       });
       setSeal(res);
       toast.success("Cryptographic Seal Minted", {
@@ -194,22 +217,60 @@ export default function SealRoute() {
               </p>
             </div>
 
-            {/* Verification ID Pill */}
-            <div className="flex items-center gap-2 rounded-lg border border-border/80 bg-muted/30 px-3 py-1.5 self-start sm:self-auto">
-              <IconLock className="size-3.5 text-muted-foreground" />
-              <span className="font-mono text-xs font-semibold text-foreground">
-                {seal?.verification_id || "TF-SEAL-20261014-07C9F054"}
-              </span>
+            {/* Verification ID Pill & Live Registry Check */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 self-start sm:self-auto">
+              <div className="flex items-center gap-2 rounded-lg border border-border/80 bg-muted/30 px-3 py-1.5">
+                <IconLock className="size-3.5 text-muted-foreground" />
+                <span className="font-mono text-xs font-semibold text-foreground">
+                  {seal?.verification_id || "TF-SEAL-20261014-07C9F054"}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={handleCopyId}
+                  title="Copy Verification ID"
+                >
+                  {copied ? <IconCheck className="size-3 text-emerald-500" /> : <IconCopy className="size-3" />}
+                </Button>
+              </div>
+
               <Button
                 size="sm"
-                variant="ghost"
-                className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground"
-                onClick={handleCopyId}
+                variant="outline"
+                className="h-8 px-2.5 text-xs gap-1.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                onClick={handleVerifyLookup}
+                disabled={isVerifyingLookup}
               >
-                {copied ? <IconCheck className="size-3 text-emerald-500" /> : <IconCopy className="size-3" />}
+                <IconShieldCheck className="size-3.5" />
+                {isVerifyingLookup ? "Querying DB..." : "Verify on Registry"}
               </Button>
             </div>
           </div>
+
+          {/* Live Registry Confirmation Banner */}
+          {lookupResult && (
+            <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 space-y-2.5 text-xs animate-in fade-in">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                  <IconCheck className="size-4 stroke-[3] text-emerald-600" />
+                  SQLite Ledger Record Authenticated ({lookupResult.verification_id})
+                </span>
+                <Badge variant="outline" className="border-emerald-500/50 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-[10px]">
+                  {lookupResult.status}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono text-muted-foreground pt-1">
+                <div>Candidate: <span className="text-foreground font-semibold">{lookupResult.candidate_name}</span></div>
+                <div>Role: <span className="text-foreground">{lookupResult.target_role}</span></div>
+                <div>Readiness Score: <span className="text-emerald-600 font-bold">{lookupResult.day_zero_score}%</span></div>
+                <div>Algorithm: <span className="text-foreground">{lookupResult.algorithm}</span></div>
+              </div>
+              <p className="text-[11px] text-muted-foreground italic pt-1 border-t border-emerald-500/20">
+                "{lookupResult.audit_summary}"
+              </p>
+            </div>
+          )}
 
           {/* Metadata Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

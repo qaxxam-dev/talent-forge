@@ -13,6 +13,12 @@ class CreateSealRequest(BaseModel):
         default_factory=list, description="Recruiter/AI marks for viva questions"
     )
     github_url: Optional[str] = Field(default=None, description="Optional verified GitHub URL")
+    verified_skills: Optional[List[str]] = Field(
+        default=None, description="Skills verified through proof-of-work and viva"
+    )
+    day_zero_score: Optional[int] = Field(
+        default=None, description="Calculated Day-Zero readiness score"
+    )
 
 
 class AuthorshipSealData(BaseModel):

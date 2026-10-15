@@ -302,6 +302,8 @@ export const api = {
     verified_tasks: string[];
     viva_marks: string[];
     github_url?: string;
+    verified_skills?: string[];
+    day_zero_score?: number;
   }): Promise<any> {
     const res = await fetchJson<any>("/v1/create-seal", {
       method: "POST",
