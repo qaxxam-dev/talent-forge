@@ -133,6 +133,8 @@ export interface GenerateVivaPayload {
   job_description?: string | null;
   evidence_summary: string;
   claimed_artifacts: string[];
+  unsubstantiated_claims?: string[];
+  code_snippets?: string[];
 }
 
 export interface GenerateVivaResponseData {

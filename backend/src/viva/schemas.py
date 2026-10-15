@@ -30,6 +30,14 @@ class VivaQuestion(BaseModel):
         max_length=3,
         description="2-3 key technical rubric criteria a strong engineer must hit",
     )
+    sample_candidate_answer: str = Field(
+        ...,
+        description="A realistic, spoken first-person candidate technical defense for this question (suitable for audio playback/speech synthesis)",
+    )
+    estimated_duration_seconds: int = Field(
+        default=55,
+        description="Estimated audio length in seconds for speaking this defense",
+    )
 
 
 class GenerateVivaRequest(BaseModel):
@@ -47,6 +55,14 @@ class GenerateVivaRequest(BaseModel):
         ...,
         min_length=1,
         description="Concrete tickets, files, or deliverables the candidate completed/verified",
+    )
+    unsubstantiated_claims: Optional[List[str]] = Field(
+        default=None,
+        description="Resume buzzwords flagged during Intake that lack proof",
+    )
+    code_snippets: Optional[List[str]] = Field(
+        default=None,
+        description="Verified code snippets audited during Kanban phase",
     )
 
 

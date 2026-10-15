@@ -41,48 +41,42 @@ export function meta() {
   return [{ title: "Screen 3 — Oral Viva Defense | TalentForge" }];
 }
 
-const ASYNC_QUESTIONS = [
+const DEFAULT_VIVA_QUESTIONS: VivaQuestion[] = [
   {
     id: "async-q1",
-    num: 1,
-    title: "Queue Consumer & Concurrency Control",
-    question: "How did you structure the asynchronous background worker to prevent database connection pool starvation under peak campus traffic?",
-    artifact: "app/core/queue_consumer.py",
-    duration: "01:14",
-    durationSeconds: 74,
-    recordedAt: "Today, 14:22:08 UTC",
-    transcript: "In app/core/queue_consumer.py, I used an asynchronous semaphore bounded to 20 concurrent tasks, and implemented an exponential backoff retry. For database transactions, we utilized SQLAlchemy async session contexts with pre_ping=True, ensuring idle connections are reclaimed rather than starving the pool.",
-    suggestedMark: "adequate",
-    score: 88,
-    defenseAngle: "Validates bounded async concurrency and pre_ping connection pooling under high peak campus concurrency.",
+    question_text: "How did you structure the asynchronous background worker to prevent database connection pool starvation under peak campus traffic?",
+    referenced_artifact: "app/core/queue_consumer.py",
+    question_type: "architectural",
+    estimated_duration_seconds: 55,
+    sample_candidate_answer: "In app/core/queue_consumer.py, I used an asynchronous semaphore bounded to 20 concurrent tasks, and implemented an exponential backoff retry. For database transactions, we utilized SQLAlchemy async session contexts with pre_ping=True, ensuring idle connections are reclaimed rather than starving the pool.",
+    rubric: [
+      { id: "r-1-1", text: "Bounded async concurrency control", expected_signal: "Asyncio semaphore or worker pool limit" },
+      { id: "r-1-2", text: "Connection pool reclamation", expected_signal: "Session context management and pre_ping pool health checks" },
+    ],
   },
   {
     id: "async-q2",
-    num: 2,
-    title: "Relational Advisory Locks vs Cache Mutex",
-    question: "Why did you choose PostgreSQL advisory locks rather than an in-memory Redis mutex for double-entry ledger transactions?",
-    artifact: "src/ledger/transaction_service.ts",
-    duration: "00:58",
-    durationSeconds: 58,
-    recordedAt: "Today, 14:24:19 UTC",
-    transcript: "Redis distributed locks introduce network partition failure risks and potential split-brain if the lock TTL expires mid-transaction. By using PostgreSQL advisory locks within the same relational transaction boundary, lock release is strictly tied to the commit/rollback lifecycle, guaranteeing zero unbalanced entries.",
-    suggestedMark: "adequate",
-    score: 92,
-    defenseAngle: "Defends transactional consistency guarantees over network-partitioned cache mutexes.",
+    question_text: "Why did you choose PostgreSQL advisory locks rather than an in-memory Redis mutex for double-entry ledger transactions?",
+    referenced_artifact: "src/ledger/transaction_service.ts",
+    question_type: "tradeoff",
+    estimated_duration_seconds: 48,
+    sample_candidate_answer: "Redis distributed locks introduce network partition failure risks and potential split-brain if the lock TTL expires mid-transaction. By using PostgreSQL advisory locks within the same relational transaction boundary, lock release is strictly tied to the commit/rollback lifecycle, guaranteeing zero unbalanced entries.",
+    rubric: [
+      { id: "r-2-1", text: "Transactional lifecycle coupling", expected_signal: "Lock release strictly bound to commit or rollback" },
+      { id: "r-2-2", text: "Split-brain risk mitigation", expected_signal: "Avoids cache TTL expiration during long database transactions" },
+    ],
   },
   {
     id: "async-q3",
-    num: 3,
-    title: "Broker Disconnect & Deduplication Key",
-    question: "If the upstream message queue broker disconnects mid-ingestion, how does your consumer guarantee at-least-once delivery without duplicating state?",
-    artifact: "Dockerfile & queue_worker.py",
-    duration: "01:05",
-    durationSeconds: 65,
-    recordedAt: "Today, 14:27:42 UTC",
-    transcript: "Each ingested payload is assigned a deterministic SHA-256 idempotency key stored in Redis with an atomic SETNX check. If the consumer dies before sending an ACK, the re-delivered message hits the deduplication filter, logs a duplicate warning, and skips re-execution.",
-    suggestedMark: "adequate",
-    score: 86,
-    defenseAngle: "Demonstrates hands-on mastery of deterministic idempotency keys and at-least-once message deduplication.",
+    question_text: "If the upstream message queue broker disconnects mid-ingestion, how does your consumer guarantee at-least-once delivery without duplicating state?",
+    referenced_artifact: "Dockerfile & queue_worker.py",
+    question_type: "requirement_mutation",
+    estimated_duration_seconds: 52,
+    sample_candidate_answer: "Each ingested payload is assigned a deterministic SHA-256 idempotency key stored in Redis with an atomic SETNX check. If the consumer dies before sending an ACK, the re-delivered message hits the deduplication filter, logs a duplicate warning, and skips re-execution.",
+    rubric: [
+      { id: "r-3-1", text: "Deterministic idempotency keys", expected_signal: "SHA-256 or payload hash filter" },
+      { id: "r-3-2", text: "Atomic duplicate suppression", expected_signal: "SETNX or unique constraint validation" },
+    ],
   },
 ];
 
@@ -90,16 +84,27 @@ interface AudioWaveformProps {
   durationSeconds: number;
   durationLabel: string;
   recordedAt: string;
+  textToSpeak?: string;
 }
 
 function ShadcnAudioWaveform({
   durationSeconds,
   durationLabel,
   recordedAt,
+  textToSpeak,
 }: AudioWaveformProps) {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [currentTime, setCurrentTime] = React.useState(0);
   const [playbackSpeed, setPlaybackSpeed] = React.useState<1 | 1.5 | 2>(1);
+
+  // Stop speech when unmounting or textToSpeak changes
+  React.useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [textToSpeak]);
 
   const barHeights = React.useMemo(() => [
     18, 22, 28, 36, 45, 52, 65, 78, 85, 92,
@@ -109,6 +114,7 @@ function ShadcnAudioWaveform({
     38, 30, 24, 28, 22, 18, 16, 14,
   ], []);
 
+  // Update timer while speaking
   React.useEffect(() => {
     let interval: any = null;
     if (isPlaying) {
@@ -126,6 +132,49 @@ function ShadcnAudioWaveform({
     return () => clearInterval(interval);
   }, [isPlaying, playbackSpeed, durationSeconds]);
 
+  const handleTogglePlay = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      toast.error("Web Speech Synthesis not supported in this browser.");
+      return;
+    }
+
+    if (isPlaying) {
+      window.speechSynthesis.pause();
+      setIsPlaying(false);
+    } else {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setIsPlaying(true);
+      } else {
+        window.speechSynthesis.cancel();
+        if (currentTime >= durationSeconds) {
+          setCurrentTime(0);
+        }
+        const text = textToSpeak || "Candidate response is being analyzed by the evaluation engine.";
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = playbackSpeed;
+        utterance.onend = () => {
+          setIsPlaying(false);
+          setCurrentTime(durationSeconds);
+        };
+        utterance.onerror = (e) => {
+          console.warn("Speech synthesis error", e);
+          setIsPlaying(false);
+        };
+        window.speechSynthesis.speak(utterance);
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setCurrentTime(0);
+    setIsPlaying(false);
+  };
+
   const progress = Math.min(1, currentTime / durationSeconds);
   const currentMinutes = Math.floor(currentTime / 60);
   const currentSecs = Math.floor(currentTime % 60);
@@ -137,7 +186,19 @@ function ShadcnAudioWaveform({
   };
 
   const toggleSpeed = () => {
-    setPlaybackSpeed((prev) => (prev === 1 ? 1.5 : prev === 1.5 ? 2 : 1));
+    const nextSpeed: 1 | 1.5 | 2 = playbackSpeed === 1 ? 1.5 : playbackSpeed === 1.5 ? 2 : 1;
+    setPlaybackSpeed(nextSpeed);
+    if (isPlaying && typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const text = textToSpeak || "";
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = nextSpeed;
+      utterance.onend = () => {
+        setIsPlaying(false);
+        setCurrentTime(durationSeconds);
+      };
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   return (
@@ -189,12 +250,8 @@ function ShadcnAudioWaveform({
             size="sm"
             variant="default"
             className="size-8 rounded-full p-0 shadow-xs"
-            onClick={() => {
-              if (currentTime >= durationSeconds) {
-                setCurrentTime(0);
-              }
-              setIsPlaying(!isPlaying);
-            }}
+            onClick={handleTogglePlay}
+            title={isPlaying ? "Pause voice synthesis" : "Play candidate voice"}
           >
             {isPlaying ? (
               <IconPlayerPause className="size-4" />
@@ -207,10 +264,7 @@ function ShadcnAudioWaveform({
             variant="ghost"
             size="sm"
             className="h-7 text-xs font-mono text-muted-foreground hover:text-foreground px-2"
-            onClick={() => {
-              setCurrentTime(0);
-              setIsPlaying(false);
-            }}
+            onClick={handleReset}
           >
             Reset
           </Button>
@@ -294,15 +348,23 @@ export default function VivaRoute() {
       const claimedArtifacts =
         verifiedTasks.length > 0
           ? verifiedTasks.map((t) => `${t.id}: ${t.title} (${t.suggested_path})`)
+          : tasks.length > 0
+          ? tasks.slice(0, 3).map((t) => `${t.id}: ${t.title} (${t.suggested_path})`)
           : [
-              "TF-SPRINT1-01: Ledger balance schema & row locking (src/models/ledger.py)",
-              "TF-SPRINT2-02: Idempotency middleware & cache check (src/middleware/idempotency.py)",
-              "TF-SPRINT3-01: Transaction retry worker & circuit breaker (src/workers/ledger_worker.py)",
+              "TF-SPRINT1-01: Order schema and database models (src/models/orders.py)",
+              "TF-SPRINT2-01: Checkout controller and idempotency key (src/api/orders.py)",
+              "TF-SPRINT3-01: Concurrency isolation test suite (tests/test_orders.py)",
             ];
+
+      const codeSnippets = tasks
+        .filter((t) => !!t.verified_code_snippet)
+        .map((t) => `// ${t.id} (${t.suggested_path}):\n${t.verified_code_snippet}`);
+
+      const unsubstantiatedClaims = skillGapAnalysis?.critical_gaps?.map((g) => g.name) || [];
 
       const summary =
         evidenceSummary ||
-        "Candidate completed full 3-sprint implementation of high-throughput financial ledger engine with PostgreSQL row-level locks, Redis token caching, and circuit breaker retry patterns.";
+        `Candidate completed proof-of-work tickets across database models, controllers, and tests with verified code deliverables.`;
 
       if (!evidenceSummary) {
         setEvidenceSummary(summary);
@@ -310,9 +372,11 @@ export default function VivaRoute() {
 
       const res = await api.generateViva({
         role_title: "Senior Backend Engineer",
-        job_description: jobDescription || "Fintech backend engineer responsible for ledger accuracy",
+        job_description: jobDescription || "Production backend engineer with relational database and concurrency expertise",
         evidence_summary: summary,
         claimed_artifacts: claimedArtifacts,
+        unsubstantiated_claims: unsubstantiatedClaims.length > 0 ? unsubstantiatedClaims : undefined,
+        code_snippets: codeSnippets.length > 0 ? codeSnippets : undefined,
       });
 
       if (res.questions && res.questions.length > 0) {
@@ -478,59 +542,92 @@ export default function VivaRoute() {
   const [vivaDisplayMode, setVivaDisplayMode] = React.useState<"live" | "async">("live");
   const [activeAsyncIdx, setActiveAsyncIdx] = React.useState(0);
 
-  const handleGradeAsync = (turn: (typeof ASYNC_QUESTIONS)[0], grade: "adequate" | "weak" | "none") => {
+  // Active questions for Async Review: use real vivaQuestions if present, else fallback to DEFAULT_VIVA_QUESTIONS
+  const currentQuestions = vivaQuestions.length > 0 ? vivaQuestions : DEFAULT_VIVA_QUESTIONS;
+
+  const asyncTurns = currentQuestions.map((q, idx) => {
+    const record = vivaAnswers[q.id];
+    const durationSecs = q.estimated_duration_seconds || 52;
+    const durMin = Math.floor(durationSecs / 60);
+    const durSec = Math.floor(durationSecs % 60);
+    const durLabel = `${String(durMin).padStart(2, "0")}:${String(durSec).padStart(2, "0")}`;
+
+    return {
+      id: q.id,
+      num: idx + 1,
+      title:
+        q.question_type === "architectural"
+          ? "Architecture Deep Dive"
+          : q.question_type === "tradeoff"
+          ? "Concurrency & Trade-offs"
+          : q.question_type === "requirement_mutation"
+          ? "Requirement Mutation Test"
+          : "Adaptive Follow-up",
+      question: q.question_text,
+      artifact: q.referenced_artifact,
+      duration: durLabel,
+      durationSeconds: durationSecs,
+      recordedAt: "Self-Recorded Audio Submission",
+      transcript:
+        record?.transcript ||
+        q.sample_candidate_answer ||
+        "Candidate defended the architecture, explaining transaction isolation levels and concurrency control.",
+      suggestedMark: record?.suggested_mark || "adequate",
+      score: record?.score ? record.score * 20 : 88,
+      rubric: q.rubric,
+    };
+  });
+
+  const handleGradeAsync = (turn: (typeof asyncTurns)[0], grade: "adequate" | "weak" | "none") => {
     const mockAns: VivaAnswerRecord = {
       question_id: turn.id,
       transcript: turn.transcript,
       delivery_mode: "voice",
-      score: turn.score,
+      score: grade === "adequate" ? 4 : grade === "weak" ? 3 : 2,
       suggested_mark: "adequate",
       recruiter_mark: grade,
-      rationale: "Recruiter reviewed async candidate transcript and verified defense.",
-      rubric_coverage: [
-        { rubric_id: `r-${turn.id}`, criterion: "Candidate defense", hit: grade === "adequate", citation: turn.transcript.slice(0, 45) },
-      ],
+      rationale: "Recruiter reviewed async candidate voice playback and recorded sovereign mark.",
+      rubric_coverage: turn.rubric.map((r, i) => ({
+        rubric_id: r.id,
+        criterion: r.text,
+        hit: grade === "adequate" || (grade === "weak" && i === 0),
+        citation: turn.transcript.slice(0, 60),
+      })),
     };
     recordVivaAnswer(mockAns);
     toast.success(`Marked Question ${turn.num} as ${grade.toUpperCase()}`);
   };
 
   const handleBatchApproveAsync = () => {
-    const mockAnswers: Record<string, VivaAnswerRecord> = {};
-    const mockQuestions: VivaQuestion[] = [];
+    if (vivaQuestions.length === 0) {
+      setVivaQuestions(currentQuestions);
+    }
 
-    ASYNC_QUESTIONS.forEach((item, i) => {
-      const qObj: VivaQuestion = {
-        id: item.id,
-        question_text: item.question,
-        referenced_artifact: item.artifact,
-        question_type: i === 1 ? "tradeoff" : "architectural",
-        rubric: [
-          { id: `r-${i}-1`, text: "Validates architecture trade-offs", expected_signal: "Concrete system mechanics" },
-          { id: `r-${i}-2`, text: "Defends code artifact implementation", expected_signal: "Direct code citation" },
-        ],
-      };
-      mockQuestions.push(qObj);
-
-      mockAnswers[item.id] = {
-        question_id: item.id,
-        transcript: item.transcript,
+    currentQuestions.forEach((q, i) => {
+      const sampleAnswer =
+        vivaAnswers[q.id]?.transcript ||
+        q.sample_candidate_answer ||
+        "Candidate articulated clear architectural defense.";
+      const ansRecord: VivaAnswerRecord = {
+        question_id: q.id,
+        transcript: sampleAnswer,
         delivery_mode: "voice",
-        score: item.score,
+        score: 4 + (i % 2 === 0 ? 1 : 0),
         suggested_mark: "adequate",
         recruiter_mark: "adequate",
         rationale: "Strong technical defense demonstrating hands-on ownership of code artifacts.",
-        rubric_coverage: [
-          { rubric_id: `r-${i}-1`, criterion: "Architecture trade-offs", hit: true, citation: item.transcript.slice(0, 45) },
-          { rubric_id: `r-${i}-2`, criterion: "Artifact citations", hit: true, citation: item.transcript.slice(46, 95) },
-        ],
+        rubric_coverage: q.rubric.map((r) => ({
+          rubric_id: r.id,
+          criterion: r.text,
+          hit: true,
+          citation: sampleAnswer.slice(0, 50),
+        })),
       };
+      recordVivaAnswer(ansRecord);
     });
 
-    setVivaQuestions(mockQuestions);
-    Object.values(mockAnswers).forEach((ans) => recordVivaAnswer(ans));
     toast.success("Batch Approved Candidate Defenses", {
-      description: "All 3 async responses validated. Sovereign Adequate marks recorded.",
+      description: `All ${currentQuestions.length} responses validated. Sovereign Adequate marks recorded.`,
     });
   };
 
@@ -714,32 +811,54 @@ export default function VivaRoute() {
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs font-semibold shrink-0 gap-1.5 h-8 border-border/70 hover:bg-muted/60 shadow-xs"
-              onClick={handleBatchApproveAsync}
-            >
-              <IconCheck className="size-3.5 text-emerald-500" />
-              Batch Approve AI Marks
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs font-semibold shrink-0 gap-1.5 h-8 border-border/70 hover:bg-muted/60 shadow-xs"
+                onClick={handleGenerateViva}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <>
+                    <IconLoader2 className="size-3.5 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <IconSparkles className="size-3.5 text-primary" />
+                    Generate Viva From Code
+                  </>
+                )}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs font-semibold shrink-0 gap-1.5 h-8 border-border/70 hover:bg-muted/60 shadow-xs"
+                onClick={handleBatchApproveAsync}
+              >
+                <IconCheck className="size-3.5 text-emerald-500" />
+                Batch Approve AI Marks
+              </Button>
+            </div>
           </div>
 
           {/* Master-Detail Async Defense Workbench */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* Left Column: 3 Question Cards (5 cols on lg) */}
+            {/* Left Column: Question Cards (5 cols on lg) */}
             <div className="lg:col-span-5 space-y-3">
               <div className="flex items-center justify-between px-1">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Candidate Defenses ({ASYNC_QUESTIONS.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length}/{ASYNC_QUESTIONS.length} Reviewed)
+                  Candidate Defenses ({asyncTurns.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length}/{asyncTurns.length} Reviewed)
                 </h4>
                 <span className="text-[11px] text-muted-foreground font-mono">
-                  {Math.round((ASYNC_QUESTIONS.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length / ASYNC_QUESTIONS.length) * 100)}% Complete
+                  {Math.round((asyncTurns.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length / Math.max(1, asyncTurns.length)) * 100)}% Complete
                 </span>
               </div>
 
               <div className="space-y-2">
-                {ASYNC_QUESTIONS.map((turn, idx) => {
+                {asyncTurns.map((turn, idx) => {
                   const record = vivaAnswers[turn.id];
                   const isMarked = !!record?.recruiter_mark;
                   const isAdequate = record?.recruiter_mark === "adequate";
@@ -802,7 +921,8 @@ export default function VivaRoute() {
             {/* Right Column: Active Review Station (7 cols on lg) */}
             <div className="lg:col-span-7">
               {(() => {
-                const activeTurn = ASYNC_QUESTIONS[activeAsyncIdx] || ASYNC_QUESTIONS[0];
+                const activeTurn = asyncTurns[activeAsyncIdx] || asyncTurns[0];
+                if (!activeTurn) return null;
                 const activeRecord = vivaAnswers[activeTurn.id];
                 const activeMark = activeRecord?.recruiter_mark || "adequate";
 
@@ -812,7 +932,7 @@ export default function VivaRoute() {
                     <div className="flex items-center justify-between border-b border-border/60 pb-3">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-[10px] font-mono">
-                          Defense {activeTurn.num} of 3
+                          Defense {activeTurn.num} of {asyncTurns.length}
                         </Badge>
                         <Badge variant="outline" className="text-[10px] font-mono border-border/60 text-muted-foreground">
                           {activeTurn.artifact}
@@ -833,12 +953,13 @@ export default function VivaRoute() {
                       </h3>
                     </div>
 
-                    {/* Shadcn Audio Waveform Player */}
+                    {/* Shadcn Audio Waveform Player with real Web Speech Synthesis */}
                     <ShadcnAudioWaveform
                       key={activeTurn.id}
                       durationSeconds={activeTurn.durationSeconds}
                       durationLabel={activeTurn.duration}
                       recordedAt={activeTurn.recordedAt}
+                      textToSpeak={activeTurn.transcript}
                     />
 
                     {/* Transcript View */}
@@ -906,9 +1027,9 @@ export default function VivaRoute() {
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground">
-                  {ASYNC_QUESTIONS.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length === ASYNC_QUESTIONS.length
-                    ? "Async Defense Reviews Completed (3/3)"
-                    : `Async Defense Review Progress (${ASYNC_QUESTIONS.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length}/3 Reviewed)`}
+                  {asyncTurns.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length === asyncTurns.length
+                    ? `Async Defense Reviews Completed (${asyncTurns.length}/${asyncTurns.length})`
+                    : `Async Defense Review Progress (${asyncTurns.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length}/${asyncTurns.length} Reviewed)`}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Recruiter sovereign marks recorded. Proceed to mint the cryptographic Authorship Seal.
@@ -918,7 +1039,7 @@ export default function VivaRoute() {
             <Link to="/seal">
               <Button
                 className="text-xs font-semibold gap-1.5 h-8 shadow-xs"
-                disabled={ASYNC_QUESTIONS.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length === 0}
+                disabled={asyncTurns.filter((q) => !!vivaAnswers[q.id]?.recruiter_mark).length === 0}
               >
                 Proceed to Authorship Seal
                 <IconArrowRight className="size-3.5" />

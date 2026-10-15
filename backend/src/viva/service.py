@@ -17,24 +17,29 @@ Your mission is to rigorously test an engineering candidate on the work they cla
 
 You must generate EXACTLY 3 targeted technical questions:
 1. Q1 (question_type="architectural"):
-   - Deep dive into an architectural choice, state management, or boundary separation in their claimed artifacts.
-   - Must reference a concrete component, file, or ticket (e.g., "In your idempotency ledger service...").
+   - Deep dive into an architectural choice, state management, or boundary separation in their claimed artifacts or verified code snippets.
+   - Must reference a concrete component, file, or ticket (e.g., "In your order processing service...").
    - Define 2-3 rigorous rubric criteria that an experienced engineer would articulate.
+   - Provide sample_candidate_answer: A realistic, spoken first-person technical response (~50-80 words) suitable for audio speech synthesis.
 
 2. Q2 (question_type="tradeoff"):
-   - Probe failure modes, distributed concurrency, memory limits, or transaction rollbacks.
+   - Probe failure modes, distributed concurrency, memory limits, or transaction rollbacks in their implementation.
    - Test what happens when an external dependency or database fails mid-operation.
    - Define 2-3 rigorous rubric criteria.
+   - Provide sample_candidate_answer: A realistic, spoken first-person technical response (~50-80 words).
 
 3. Q3 (question_type="requirement_mutation"):
-   - The "Change the Requirement" stress test: Change an essential business constraint (e.g. "The ledger now requires multi-currency transactions with real-time FX rate locks", or "Traffic spikes to 10,000 webhooks/sec with strict zero-loss delivery").
+   - The "Change the Requirement" stress test: Change an essential business constraint (e.g. "Traffic spikes 20x", "Real-time consistency needed across regions").
+   - If unsubstantiated claims or resume buzzwords are provided, specifically challenge the candidate to utilize or reconcile that claimed skill against their current implementation.
    - Ask what breaks in their existing architecture and what exact migration path or abstraction they would introduce.
    - Define 2-3 rigorous rubric criteria.
+   - Provide sample_candidate_answer: A realistic, spoken first-person technical response (~50-80 words).
 
 Anti-AI-Slop Rules:
 - NEVER ask textbook definitions (no "What is ACID?", no "Explain dependency injection").
-- Questions MUST be situational, forcing the candidate to defend trade-offs in their claimed artifacts.
+- Questions MUST be situational, forcing the candidate to defend trade-offs in their claimed artifacts and verified code.
 - Keep question phrasing clear, conversational, and direct (suitable for spoken oral defense).
+- sample_candidate_answer MUST sound natural and spoken, not robotic or generic.
 """
 
 EVALUATE_DEFENSE_SYSTEM_INSTRUCTION = """
@@ -69,6 +74,17 @@ class VivaService:
         self, req: GenerateVivaRequest
     ) -> tuple[GenerateVivaResponseData, Dict[str, Any]]:
         artifacts_formatted = "\n- ".join(req.claimed_artifacts)
+        unsubstantiated_text = (
+            "\n- ".join(req.unsubstantiated_claims)
+            if req.unsubstantiated_claims
+            else "None flagged."
+        )
+        snippets_text = (
+            "\n---\n".join(req.code_snippets[:3])
+            if req.code_snippets
+            else "None provided."
+        )
+
         prompt = f"""
 Role Title: {req.role_title}
 Job Context: {req.job_description or "Standard Senior Backend Engineering requirements"}
@@ -79,10 +95,16 @@ Verified Evidence Summary:
 Claimed Artifacts & Verified Deliverables:
 - {artifacts_formatted}
 
+Unsubstantiated Resume Buzzwords to Probe (from Intake):
+- {unsubstantiated_text}
+
+Verified Code Snippets (from Kanban Proof-of-Work):
+{snippets_text}
+
 Generate exactly 3 targeted viva questions:
-- Q1: Architectural Deep Dive (with 2-3 rubrics)
-- Q2: Concurrency / Failure Trade-off (with 2-3 rubrics)
-- Q3: Requirement Mutation Stress Test (with 2-3 rubrics)
+- Q1: Architectural Deep Dive (with 2-3 rubrics and spoken sample_candidate_answer)
+- Q2: Concurrency / Failure Trade-off (with 2-3 rubrics and spoken sample_candidate_answer)
+- Q3: Requirement Mutation Stress Test (with 2-3 rubrics and spoken sample_candidate_answer)
 Include practical defense guidance for the hiring team.
 """
         parsed_dict, meta = await llm_service.generate_structured(

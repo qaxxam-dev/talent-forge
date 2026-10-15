@@ -71,6 +71,8 @@ export interface VivaQuestion {
   referenced_artifact: string;
   question_type: "architectural" | "tradeoff" | "requirement_mutation" | "adaptive_followup";
   rubric: RubricItem[];
+  sample_candidate_answer?: string;
+  estimated_duration_seconds?: number;
 }
 
 export interface RubricCheck {
