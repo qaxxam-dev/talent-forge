@@ -36,8 +36,9 @@ class LLMService:
         start_time = time.time()
         primary_model = model or config.GEMINI_MODEL
         models_to_try = [primary_model]
-        if "gemini-2.5-flash-lite" not in models_to_try:
-            models_to_try.append("gemini-2.5-flash-lite")
+        for fallback_candidate in ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"]:
+            if fallback_candidate not in models_to_try:
+                models_to_try.append(fallback_candidate)
 
         last_exception: Optional[Exception] = None
 

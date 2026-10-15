@@ -27,7 +27,7 @@ class Config(BaseConfig):
 
     # LLM Settings
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash-lite"
+    GEMINI_MODEL: str = "gemini-3.1-flash-lite"
 
     # Cryptography & Signing
     SERVER_SIGNING_KEY: str = "talentforge-secret-signing-key-production-2026"
