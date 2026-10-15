@@ -18,6 +18,13 @@ class ProjectChallenge(BaseModel):
     )
 
 
+class PreVerifiedSource(BaseModel):
+    verification_id: Optional[str] = None
+    verified_at: Optional[str] = None
+    role: Optional[str] = None
+    matched_skills: Optional[List[str]] = None
+
+
 class TaskItem(BaseModel):
     id: str = Field(..., description="Unique ticket ID (e.g. TF-SPRINT1-01)")
     sprint: int = Field(
@@ -44,7 +51,7 @@ class TaskItem(BaseModel):
     notes: Optional[str] = Field(
         default=None, description="Optional recruiter notes, PR link, or commit verification notes"
     )
-    pre_verified_source: Optional[dict] = Field(
+    pre_verified_source: Optional[PreVerifiedSource] = Field(
         default=None, description="Details of prior verification if pre-verified"
     )
 

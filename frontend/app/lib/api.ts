@@ -8,7 +8,7 @@ export interface APIError {
 export interface APIResponse<T> {
   success: boolean;
   data: T | null;
-  error: APIError | null;
+  error: APIError | string | null;
   meta: Record<string, any> | null;
 }
 
@@ -74,8 +74,12 @@ async function fetchJson<T>(url: string, options: RequestInit): Promise<APIRespo
   }
 
   if (!response.ok || !json.success) {
-    const message = json?.error?.message || `Request failed with status ${response.status}`;
-    const code = json?.error?.code || "HTTP_ERROR";
+    const errVal = json?.error as any;
+    const message =
+      typeof errVal === "string"
+        ? errVal
+        : errVal?.message || `Request failed with status ${response.status}`;
+    const code = typeof errVal === "object" && errVal?.code ? errVal.code : "HTTP_ERROR";
     throw new ApiClientError(message, response.status, code);
   }
 

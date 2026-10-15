@@ -1,21 +1,44 @@
 from typing import List, Tuple
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from core.config import config
 from core.llm import llm_service
 from src.kanban.schemas import (
     GenerateSpecRequest,
     GenerateSpecResponseData,
+    PreVerifiedSource,
     ProjectChallenge,
     TaskItem,
 )
+
+
+class LLMTaskItem(BaseModel):
+    id: str = Field(..., description="Unique ticket ID (e.g. TF-S1-01)")
+    sprint: int = Field(
+        ...,
+        ge=1,
+        le=3,
+        description="1 = Schema & Models, 2 = APIs & Controllers, 3 = Deploy & Testing",
+    )
+    title: str = Field(..., description="Action-oriented engineering task title")
+    description: str = Field(
+        ..., description="Short context on why this task is needed and what to implement"
+    )
+    estimated_hours: int = Field(..., ge=1, le=24, description="Realistic engineering hours")
+    acceptance_criteria: str = Field(
+        ...,
+        description="2-3 concrete bulleted verification signals (schema checks, edge cases, contracts)",
+    )
+    suggested_path: str = Field(
+        ..., description="Suggested repository file path (e.g. src/models/ledger.py)"
+    )
 
 
 class LLMSpecResponse(BaseModel):
     challenge_title: str
     problem_statement: str
     tech_stack_focus: str
-    tasks: List[TaskItem]
+    tasks: List[LLMTaskItem]
     evidence_summary: str
 
 
@@ -162,12 +185,12 @@ class KanbanService:
 
             if matched_skills or matched_deliverable:
                 task.status = "pre_verified"
-                task.pre_verified_source = {
-                    "verification_id": verification_id,
-                    "verified_at": verified_at,
-                    "role": target_role,
-                    "matched_skills": matched_skills or ["Core Engineering"],
-                }
+                task.pre_verified_source = PreVerifiedSource(
+                    verification_id=verification_id,
+                    verified_at=verified_at,
+                    role=target_role,
+                    matched_skills=matched_skills or ["Core Engineering"],
+                )
                 disp_skills = ", ".join(matched_skills[:2]) if matched_skills else "Prior Artifact"
                 task.notes = f"Pre-verified ({disp_skills}) carried over from {verification_id}"
 
@@ -244,6 +267,10 @@ Generate a comprehensive 3-sprint Kanban specification:
                 tasks.append(TaskItem(**t))
             elif isinstance(t, TaskItem):
                 tasks.append(t)
+            elif isinstance(t, LLMTaskItem):
+                tasks.append(TaskItem(**t.model_dump()))
+            elif hasattr(t, "model_dump"):
+                tasks.append(TaskItem(**t.model_dump()))
 
         tasks = KanbanService._apply_prior_verification(tasks, request.prior_verification)
 

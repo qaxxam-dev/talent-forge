@@ -30,44 +30,62 @@ class LLMService:
     ) -> tuple[Dict[str, Any], Dict[str, Any]]:
         """
         Calls Gemini with structured schema using async client.aio.models.generate_content and returns (parsed_dict, meta_dict).
+        Automatically falls back to gemini-2.5-flash-lite if the primary model hits rate limits or capacity spikes.
         """
         client = self.get_client()
         start_time = time.time()
-        selected_model = model or config.GEMINI_MODEL
+        primary_model = model or config.GEMINI_MODEL
+        models_to_try = [primary_model]
+        if "gemini-2.5-flash-lite" not in models_to_try:
+            models_to_try.append("gemini-2.5-flash-lite")
 
-        try:
-            response = await asyncio.wait_for(
-                client.aio.models.generate_content(
-                    model=selected_model,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=system_instruction,
-                        response_mime_type="application/json",
-                        response_schema=response_schema,
-                        temperature=0.2,
+        last_exception: Optional[Exception] = None
+
+        for current_model in models_to_try:
+            try:
+                response = await asyncio.wait_for(
+                    client.aio.models.generate_content(
+                        model=current_model,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=system_instruction,
+                            response_mime_type="application/json",
+                            response_schema=response_schema,
+                            temperature=0.2,
+                        ),
                     ),
-                ),
-                timeout=35.0,
-            )
-            latency_ms = int((time.time() - start_time) * 1000)
+                    timeout=35.0,
+                )
+                latency_ms = int((time.time() - start_time) * 1000)
 
-            if not response.text:
-                raise CustomException("Gemini returned empty response")
+                if not response.text:
+                    raise CustomException("Gemini returned empty response")
 
-            parsed = json.loads(response.text)
-            meta = {
-                "model": selected_model,
-                "latency_ms": latency_ms,
-            }
-            return parsed, meta
-        except asyncio.TimeoutError:
-            raise CustomException("Gemini API call timed out after 35s")
-        except json.JSONDecodeError as e:
-            raise CustomException(f"Invalid JSON returned from model: {str(e)}")
-        except Exception as e:
-            if isinstance(e, CustomException):
-                raise e
-            raise CustomException(f"Gemini API error: {str(e)}")
+                parsed = json.loads(response.text)
+                meta = {
+                    "model": current_model,
+                    "latency_ms": latency_ms,
+                }
+                return parsed, meta
+            except asyncio.TimeoutError:
+                last_exception = CustomException(f"Gemini API call timed out after 35s on {current_model}")
+            except json.JSONDecodeError as e:
+                last_exception = CustomException(f"Invalid JSON returned from model: {str(e)}")
+                break
+            except Exception as e:
+                if isinstance(e, CustomException):
+                    last_exception = e
+                else:
+                    err_msg = str(e)
+                    last_exception = CustomException(f"Gemini API error ({current_model}): {err_msg}")
+                    # If quota exhausted (429) or high demand (503), retry next model in pool
+                    if any(indicator in err_msg for indicator in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE")):
+                        continue
+                raise last_exception
+
+        if last_exception:
+            raise last_exception
+        raise CustomException("Failed to generate structured response from Gemini")
 
 
 llm_service = LLMService()
